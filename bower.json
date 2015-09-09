@@ -1,0 +1,22 @@
+{
+  "name": "cytoscape-dagre",
+  "version": "1.0.0",
+  "description": "The Dagre layout for DAGs and trees for Cytoscape.js ",
+  "main": "cytoscape-dagre.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cytoscape/cytoscape.js-dagre.git"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "keywords": [
+    "cytoscape",
+    "cyext"
+  ],
+  "license": "LGPL-3.0+"
+}

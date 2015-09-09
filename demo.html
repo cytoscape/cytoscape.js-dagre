@@ -1,0 +1,92 @@
+<!DOCTYPE>
+
+<html>
+
+	<head>
+		<title>cytoscape-dagre.js demo</title>
+
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+
+		<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+		<script src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>
+
+		<!-- for testing with local version of cytoscape.js -->
+		<!--<script src="../cytoscape.js/build/cytoscape.js"></script>-->
+
+		<script src="dagre.js"></script>
+		<script src="cytoscape-dagre.js"></script>
+
+		<style>
+			body {
+				font-family: helvetica;
+				font-size: 14px;
+			}
+
+			#cy {
+				width: 100%;
+				height: 100%;
+				position: absolute;
+				left: 0;
+				top: 0;
+				z-index: 999;
+			}
+
+			h1 {
+				opacity: 0.5;
+				font-size: 1em;
+			}
+		</style>
+
+		<script>
+			$(function(){
+
+				var cy = window.cy = cytoscape({
+					container: document.getElementById('cy'),
+
+					layout: {
+						name: 'dagre'
+					},
+
+					style: [
+						{
+							selector: 'node',
+							css: {
+								'content': 'data(id)'
+							}
+						},
+
+						{
+							selector: 'edge',
+							css: {
+								'target-arrow-shape': 'triangle'
+							}
+						}
+					],
+
+					elements: {
+						nodes: [
+							{ data: { id: 'n0' } },
+							{ data: { id: 'n1' } },
+							{ data: { id: 'n2' } },
+							{ data: { id: 'n3' } }
+						],
+						edges: [
+							{ data: { source: 'n0', target: 'n1' } },
+							{ data: { source: 'n1', target: 'n2' } },
+							{ data: { source: 'n1', target: 'n3' } },
+						]
+					},
+				});
+
+			});
+		</script>
+	</head>
+
+	<body>
+		<h1>cytoscape-dagre demo</h1>
+
+		<div id="cy"></div>
+
+	</body>
+
+</html>

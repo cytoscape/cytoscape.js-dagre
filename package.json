@@ -1,0 +1,34 @@
+{
+  "name": "cytoscape-dagre",
+  "version": "1.0.0",
+  "description": "The Dagre layout for DAGs and trees for Cytoscape.js ",
+  "main": "cytoscape-dagre.js",
+  "spm": {
+    "main": "cytoscape-dagre.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cytoscape/cytoscape.js-dagre.git"
+  },
+  "keywords": [
+    "cytoscape",
+    "cyext"
+  ],
+  "license": "LGPL-3.0+",
+  "bugs": {
+    "url": "https://github.com/cytoscape/cytoscape.js-dagre/issues"
+  },
+  "homepage": "https://github.com/cytoscape/cytoscape.js-dagre",
+  "devDependencies": {
+    "gulp": "^3.8.8",
+    "gulp-jshint": "^1.8.5",
+    "gulp-prompt": "^0.1.1",
+    "gulp-replace": "^0.4.0",
+    "gulp-shell": "^0.2.9",
+    "jshint-stylish": "^1.0.0",
+    "run-sequence": "^1.0.0"
+  }
+}
