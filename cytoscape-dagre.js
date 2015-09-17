@@ -4,8 +4,7 @@
   var register = function( cytoscape, dagre ){
     if( !cytoscape || !dagre ){ return; } // can't register if cytoscape unspecified
 
-    var util = cytoscape.util;
-    var is = cytoscape.is;
+    var isFunction = function(o){ return typeof o === 'function'; };
 
     // default layout options
     var defaults = {
@@ -31,7 +30,9 @@
     // constructor
     // options : object containing layout options
     function DagreLayout( options ){
-      this.options = util.extend(true, {}, defaults, options);
+      var opts = this.options = {};
+      for( var i in defaults ){ opts[i] = defaults[i]; }
+      for( var i in options ){ opts[i] = options[i]; }
     }
 
     // runs the layout
@@ -43,12 +44,14 @@
       var eles = options.eles;
 
       var getVal = function( ele, val ){
-        return is.fn(val) ? val.apply( ele, [ ele ] ) : val;
+        return isFunction(val) ? val.apply( ele, [ ele ] ) : val;
       };
 
-      var bb = util.makeBoundingBox( options.boundingBox ? options.boundingBox : {
-        x1: 0, y1: 0, w: cy.width(), h: cy.height()
-      } );
+      var bb = options.boundingBox || { x1: 0, y1: 0, w: cy.width(), h: cy.height() };
+      if( bb.x2 === undefined ){ bb.x2 = bb.x1 + bb.w; }
+      if( bb.w === undefined ){ bb.w = bb.x2 - bb.x1; }
+      if( bb.y2 === undefined ){ bb.y2 = bb.y1 + bb.h; }
+      if( bb.h === undefined ){ bb.h = bb.y2 - bb.y1; }
 
       var g = new dagre.graphlib.Graph({
         multigraph: true,
