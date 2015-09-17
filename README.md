@@ -28,15 +28,16 @@ Download the library:
 CommonJS:
 ```js
 var cytoscape = require('cytoscape');
-var dagre = require('cytoscape-dagre');
+var cydagre = require('cytoscape-dagre');
+var dagre = require('dagre');
 
-dagre( cytoscape ); // register extension
+cydagre( cytoscape, dagre ); // register extension
 ```
 
 AMD:
 ```js
-require(['cytoscape', 'cytoscape-dagre'], function( cytoscape, dagre ){
-  dagre( cytoscape ); // register extension
+require(['cytoscape', 'cytoscape-dagre'], function( cytoscape, cydagre, dagre ){
+  cydagre( cytoscape, dagre ); // register extension
 });
 ```
 
@@ -62,6 +63,7 @@ var defaults = {
   padding: 30, // fit padding
   animate: false, // whether to transition the node positions
   animationDuration: 500, // duration of animation in ms if enabled
+  animationEasing: undefined, // easing of animation if enabled
   boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
   ready: function(){}, // on layoutready
   stop: function(){} // on layoutstop
