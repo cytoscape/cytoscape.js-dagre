@@ -14,9 +14,17 @@
     "test",
     "tests"
   ],
+  "dependencies": {
+    "cytoscape": ">=2.4.*",
+    "dagre" : ">=0.7.4"
+    
+  },
   "keywords": [
     "cytoscape",
-    "cyext"
+    "cyext",
+    "cytoscape-dagre",
+    "dagre for cytoscape.js",
+    "dagre for cytoscape"
   ],
   "license": "MIT"
 }
