@@ -169,7 +169,7 @@ SOFTWARE.
 
       var constrainPos = function( p ){
         if( options.boundingBox ){
-          var xPct = (p.x - dagreBB.x1) / dagreBB.w;
+          var xPct = dagreBB.w === 0 ? 0 : (p.x - dagreBB.x1) / dagreBB.w;
           var yPct = dagreBB.h === 0 ? 0 : (p.y - dagreBB.y1) / dagreBB.h;
 
           return {
