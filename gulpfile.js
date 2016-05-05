@@ -17,7 +17,7 @@ gulp.task('default', [], function( next ){
 });
 
 gulp.task('publish', [], function( next ){
-  runSequence('confver', 'lint', 'pkgver', 'push', 'tag', 'npm', 'spm', next);
+  runSequence('confver', 'lint', 'pkgver', 'push', 'tag', 'npm', next);
 });
 
 gulp.task('confver', ['version'], function(){
@@ -72,10 +72,6 @@ gulp.task('tag', shell.task([
 
 gulp.task('npm', shell.task([
   'npm publish .'
-]));
-
-gulp.task('spm', shell.task([
-  'spm publish'
 ]));
 
 // http://www.jshint.com/docs/options/
