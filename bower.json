@@ -15,9 +15,8 @@
     "tests"
   ],
   "dependencies": {
-    "cytoscape": ">=2.4.*",
-    "dagre" : ">=0.7.4"
-    
+    "cytoscape": "^2.4.0",
+    "dagre" : "~0.7.4"
   },
   "keywords": [
     "cytoscape",
