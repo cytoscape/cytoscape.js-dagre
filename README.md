@@ -29,9 +29,8 @@ CommonJS:
 ```js
 var cytoscape = require('cytoscape');
 var cydagre = require('cytoscape-dagre');
-var dagre = require('dagre');
 
-cydagre( cytoscape, dagre ); // register extension
+cydagre( cytoscape ); // register extension
 ```
 
 AMD:
