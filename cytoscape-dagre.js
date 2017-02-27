@@ -181,8 +181,9 @@ SOFTWARE.
         }
       };
 
-      nodes.layoutPositions(layout, options, function(){
-        var dModel = this.scratch().dagre;
+      nodes.layoutPositions(layout, options, function( ele ){
+        ele = typeof ele === "object" ? ele : this;
+        var dModel = ele.scratch().dagre;
 
         return constrainPos({
           x: dModel.x,
