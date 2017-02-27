@@ -1,6 +1,5 @@
 {
   "name": "cytoscape-dagre",
-  "version": "1.4.0",
   "description": "The Dagre layout for DAGs and trees for Cytoscape.js ",
   "main": "cytoscape-dagre.js",
   "repository": {
@@ -15,7 +14,7 @@
     "tests"
   ],
   "dependencies": {
-    "cytoscape": "^2.4.0",
+    "cytoscape": "^2.4.0 | ^3.0.0",
     "dagre" : "~0.7.4"
   },
   "keywords": [
