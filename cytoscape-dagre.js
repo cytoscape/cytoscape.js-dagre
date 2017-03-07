@@ -202,9 +202,7 @@ SOFTWARE.
     module.exports = function( cytoscape, dagre ){
       register( cytoscape, dagre || require('dagre') );
     };
-  }
-
-  if( typeof define !== 'undefined' && define.amd ){ // expose as an amd/requirejs module
+  } else if( typeof define !== 'undefined' && define.amd ){ // expose as an amd/requirejs module
     define('cytoscape-dagre', function(){
       return register;
     });
