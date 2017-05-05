@@ -41,6 +41,7 @@ SOFTWARE.
       // general layout options
       fit: true, // whether to fit to viewport
       padding: 30, // fit padding
+      spacingFactor: undefined, // Applies a multiplicative factor (>0) to expand or compress the overall area that the nodes take up
       animate: false, // whether to transition the node positions
       animationDuration: 500, // duration of animation in ms if enabled
       animationEasing: undefined, // easing of animation if enabled
