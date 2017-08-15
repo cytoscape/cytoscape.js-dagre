@@ -32,6 +32,6 @@
     "dagre": "~0.7.4"
   },
   "peerDependencies": {
-    "cytoscape": "^2.4.0 || ^3.0.0"
+    "cytoscape": "^3.2.0"
   }
 }
