@@ -43,9 +43,11 @@ SOFTWARE.
       padding: 30, // fit padding
       spacingFactor: undefined, // Applies a multiplicative factor (>0) to expand or compress the overall area that the nodes take up
       animate: false, // whether to transition the node positions
+      animateFilter: function( node, i ){ return true; }, // whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions
       animationDuration: 500, // duration of animation in ms if enabled
       animationEasing: undefined, // easing of animation if enabled
       boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
+      transform: function( node, pos ){ return pos; }, // a function that applies a transform to the final node position
       ready: function(){}, // on layoutready
       stop: function(){} // on layoutstop
     };
