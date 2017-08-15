@@ -12,7 +12,7 @@ The `dagre` layout organises the graph using a DAG (directed acyclic graph) syst
 
 ## Dependencies
 
- * Cytoscape.js ^2.4.0 || ^3.0.0
+ * Cytoscape.js ^3.2.0
  * Dagre ~0.7.4
 
 
@@ -23,20 +23,28 @@ Download the library:
  * via bower: `bower install cytoscape-dagre`, or
  * via direct download in the repository (probably from a tag).
 
-`require()` the library as appropriate for your project:
+Import the library as appropriate for your project:
+
+ES:
+```js
+import cytoscape from 'cytoscape';
+import dagre from 'cytoscape-dagre';
+
+cytoscape.use( dagre );
+```
 
 CommonJS:
 ```js
-var cytoscape = require('cytoscape');
-var cydagre = require('cytoscape-dagre');
+let cytoscape = require('cytoscape');
+let dagre = require('cytoscape-dagre');
 
-cydagre( cytoscape ); // register extension
+cytoscape.use( dagre ); // register extension
 ```
 
 AMD:
 ```js
-require(['cytoscape', 'cytoscape-dagre'], function( cytoscape, cydagre, dagre ){
-  cydagre( cytoscape, dagre ); // register extension
+require(['cytoscape', 'cytoscape-dagre', 'dagre'], function( cytoscape, registerDagre, dagre ){
+  registerDagre( cytoscape, dagre ); // register extension
 });
 ```
 
@@ -60,10 +68,14 @@ var defaults = {
   // general layout options
   fit: true, // whether to fit to viewport
   padding: 30, // fit padding
+  spacingFactor: undefined, // Applies a multiplicative factor (>0) to expand or compress the overall area that the nodes take up
+  nodeDimensionsIncludeLabels: undefined, // whether labels should be included in determining the space used by a node (default true)
   animate: false, // whether to transition the node positions
+  animateFilter: function( node, i ){ return true; }, // whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions
   animationDuration: 500, // duration of animation in ms if enabled
   animationEasing: undefined, // easing of animation if enabled
   boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
+  transform: function( node, pos ){ return pos; }, // a function that applies a transform to the final node position
   ready: function(){}, // on layoutready
   stop: function(){} // on layoutstop
 };
