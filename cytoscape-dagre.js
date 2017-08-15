@@ -42,6 +42,7 @@ SOFTWARE.
       fit: true, // whether to fit to viewport
       padding: 30, // fit padding
       spacingFactor: undefined, // Applies a multiplicative factor (>0) to expand or compress the overall area that the nodes take up
+      nodeDimensionsIncludeLabels: undefined, // whether labels should be included in determining the space used by a node (default true)
       animate: false, // whether to transition the node positions
       animateFilter: function( node, i ){ return true; }, // whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions
       animationDuration: 500, // duration of animation in ms if enabled
@@ -104,7 +105,7 @@ SOFTWARE.
       var nodes = eles.nodes();
       for( var i = 0; i < nodes.length; i++ ){
         var node = nodes[i];
-        var nbb = node.boundingBox();
+        var nbb = node.layoutDimensions( options );
 
         g.setNode( node.id(), {
           width: nbb.w,
