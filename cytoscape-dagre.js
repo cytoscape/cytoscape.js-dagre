@@ -34,7 +34,9 @@ SOFTWARE.
       nodeSep: undefined, // the separation between adjacent nodes in the same rank
       edgeSep: undefined, // the separation between adjacent edges in the same rank
       rankSep: undefined, // the separation between adjacent nodes in the same rank
-      rankDir: undefined, // 'TB' for top to bottom flow, 'LR' for left to right
+      rankDir: undefined, // 'TB' for top to bottom flow, 'LR' for left to right,
+      ranker:  undefined, // Type of algorithm to assigns a rank to each node in the input graph.
+                          // Possible values: network-simplex, tight-tree or longest-path
       minLen: function( edge ){ return 1; }, // number of ranks to keep between the source and target of the edge
       edgeWeight: function( edge ){ return 1; }, // higher weight edges are generally made shorter and straighter than lower weight edges
 
@@ -95,6 +97,7 @@ SOFTWARE.
       setGObj( 'edgesep', options.edgeSep );
       setGObj( 'ranksep', options.rankSep );
       setGObj( 'rankdir', options.rankDir );
+      setGObj( 'ranker', options.ranker );
 
       g.setGraph( gObj );
 
