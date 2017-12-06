@@ -7,13 +7,12 @@
 
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
 
-    <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
     <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
 
     <!-- for testing with local version of cytoscape.js -->
     <!--<script src="../cytoscape.js/build/cytoscape.js"></script>-->
 
-    <script src="https://cdn.rawgit.com/cpettitt/dagre/v0.7.4/dist/dagre.js"></script>
+    <script src="https://unpkg.com/dagre@0.7.4/dist/dagre.js"></script>
     <script src="cytoscape-dagre.js"></script>
 
     <style>
@@ -38,7 +37,7 @@
     </style>
 
     <script>
-      $(function(){
+      window.addEventListener('DOMContentLoaded', function(){
 
         var cy = window.cy = cytoscape({
           container: document.getElementById('cy'),
@@ -54,10 +53,6 @@
             {
               selector: 'node',
               style: {
-                'content': 'data(id)',
-                'text-opacity': 0.5,
-                'text-valign': 'center',
-                'text-halign': 'right',
                 'background-color': '#11479e'
               }
             },

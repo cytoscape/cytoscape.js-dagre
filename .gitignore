@@ -1,3 +1,4 @@
 node_modules
 npm-debug.log
-.versions
+index.html
+package-lock.json
