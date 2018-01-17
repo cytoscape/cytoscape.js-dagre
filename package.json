@@ -12,9 +12,11 @@
     "gh-pages:demo": "cpy demo.html . --rename=index.html",
     "gh-pages:deploy": "gh-pages -d .",
     "gh-pages:clean": "rimraf index.html",
+    "copyright": "update license",
     "lint": "eslint src",
     "build": "cross-env NODE_ENV=production webpack",
     "build:min": "cross-env NODE_ENV=production MIN=true webpack",
+    "build:release": "run-s build copyright",
     "watch": "webpack --progress --watch",
     "dev": "webpack-dev-server --open",
     "test": "mocha"
@@ -45,6 +47,8 @@
     "mocha": "3.4.2",
     "npm-run-all": "^4.1.2",
     "rimraf": "^2.6.2",
+    "update": "^0.7.4",
+    "updater-license": "^1.0.0",
     "webpack": "^2.7.0",
     "webpack-dev-server": "^2.4.5"
   },
