@@ -52,6 +52,9 @@ DagreLayout.prototype.run = function(){
 
   // add nodes to dagre
   let nodes = eles.nodes();
+   if(options.onlyVisible) {
+     nodes = nodes.filter(x => x.visible());
+   }
   for( let i = 0; i < nodes.length; i++ ){
     let node = nodes[i];
     let nbb = node.layoutDimensions( options );
@@ -76,7 +79,9 @@ DagreLayout.prototype.run = function(){
 
   // add edges to dagre
   let edges = eles.edges().stdFilter(function( edge ){
-    return !edge.source().isParent() && !edge.target().isParent(); // dagre can't handle edges on compound nodes
+    const isCompound = edge.source().isParent() && edge.target().isParent();  // dagre can't handle edges on compound nodes
+    const bothVisible = edge.source().visible() && edge.target().visible();
+    return !isCompound && (!options.onlyVisible || bothVisible) ;
   });
   for( let i = 0; i < edges.length; i++ ){
     let edge = edges[i];

@@ -153,6 +153,11 @@ DagreLayout.prototype.run = function () {
 
   // add nodes to dagre
   var nodes = eles.nodes();
+  if (options.onlyVisible) {
+    nodes = nodes.filter(function (x) {
+      return x.visible();
+    });
+  }
   for (var i = 0; i < nodes.length; i++) {
     var node = nodes[i];
     var nbb = node.layoutDimensions(options);
@@ -177,6 +182,9 @@ DagreLayout.prototype.run = function () {
 
   // add edges to dagre
   var edges = eles.edges().stdFilter(function (edge) {
+    if (options.onlyVisible && (edge.source().visible() || edge.target().visible())) {
+      return false;
+    }
     return !edge.source().isParent() && !edge.target().isParent(); // dagre can't handle edges on compound nodes
   });
   for (var _i2 = 0; _i2 < edges.length; _i2++) {
@@ -288,6 +296,7 @@ var defaults = {
   rankDir: undefined, // 'TB' for top to bottom flow, 'LR' for left to right,
   ranker: undefined, // Type of algorithm to assigns a rank to each node in the input graph.
   // Possible values: network-simplex, tight-tree or longest-path
+  onlyVisible: false, // ignore hidden elements in the layout calculation
   minLen: function minLen(edge) {
     return 1;
   }, // number of ranks to keep between the source and target of the edge
