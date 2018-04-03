@@ -299,7 +299,7 @@ var defaults = {
   fit: true, // whether to fit to viewport
   padding: 30, // fit padding
   spacingFactor: undefined, // Applies a multiplicative factor (>0) to expand or compress the overall area that the nodes take up
-  nodeDimensionsIncludeLabels: undefined, // whether labels should be included in determining the space used by a node (default true)
+  nodeDimensionsIncludeLabels: false, // whether labels should be included in determining the space used by a node
   animate: false, // whether to transition the node positions
   animateFilter: function animateFilter(node, i) {
     return true;
