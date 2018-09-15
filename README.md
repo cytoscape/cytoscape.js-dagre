@@ -12,7 +12,7 @@ The `dagre` layout organises the graph using a DAG (directed acyclic graph) syst
 ## Dependencies
 
  * Cytoscape.js ^3.2.0
- * Dagre ^0.7.4
+ * Dagre ^0.8.2
 
 
 ## Usage instructions
