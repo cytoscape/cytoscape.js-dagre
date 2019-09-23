@@ -157,7 +157,7 @@ DagreLayout.prototype.run = function () {
     var node = nodes[i];
     var nbb = node.layoutDimensions(options);
     // If forcePosition avoid to add node to dagre so to avoid to influence other nodes position
-    if (ele.data().dagreForcePosition) {
+    if (!node.data().dagreForcePosition) {
       g.setNode(node.id(), {
         width: nbb.w,
         height: nbb.h,
