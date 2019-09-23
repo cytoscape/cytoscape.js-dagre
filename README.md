@@ -67,7 +67,7 @@ var defaults = {
   ranker: undefined, // Type of algorithm to assign a rank to each node in the input graph. Possible values: 'network-simplex', 'tight-tree' or 'longest-path'
   minLen: function( edge ){ return 1; }, // number of ranks to keep between the source and target of the edge
   edgeWeight: function( edge ){ return 1; }, // higher weight edges are generally made shorter and straighter than lower weight edges
-
+  callback: function(cy, dagre){}, // Callback to invoke before to run the layout, useful to fix node computed position
   // general layout options
   fit: true, // whether to fit to viewport
   padding: 30, // fit padding
