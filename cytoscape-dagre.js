@@ -156,12 +156,14 @@ DagreLayout.prototype.run = function () {
   for (var i = 0; i < nodes.length; i++) {
     var node = nodes[i];
     var nbb = node.layoutDimensions(options);
-
-    g.setNode(node.id(), {
-      width: nbb.w,
-      height: nbb.h,
-      name: node.id()
-    });
+    // If forcePosition avoid to add node to dagre so to avoid to influence other nodes position
+    if (ele.data().dagreForcePosition) {
+      g.setNode(node.id(), {
+        width: nbb.w,
+        height: nbb.h,
+        name: node.id()
+      });
+    }
 
     // console.log( g.node(node.id()) );
   }
@@ -237,6 +239,10 @@ DagreLayout.prototype.run = function () {
 
   nodes.layoutPositions(layout, options, function (ele) {
     ele = (typeof ele === 'undefined' ? 'undefined' : _typeof(ele)) === "object" ? ele : this;
+    // If forcePosition avoid to compute the position according to dagra value but uses node position itself
+    if (ele.data().dagreForcePosition) {
+      return ele.position();
+    }
     var dModel = ele.scratch().dagre;
 
     return constrainPos({
