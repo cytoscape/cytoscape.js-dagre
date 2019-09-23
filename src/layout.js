@@ -136,6 +136,10 @@ DagreLayout.prototype.run = function(){
     }
   };
 
+  if(options.callback) {
+    options.callback(cy, g);
+  }
+
   nodes.layoutPositions(layout, options, function( ele ){
     ele = typeof ele === "object" ? ele : this;
     // If forcePosition avoid to compute the position according to dagra value but uses node position itself
