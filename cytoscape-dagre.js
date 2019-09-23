@@ -237,6 +237,10 @@ DagreLayout.prototype.run = function () {
     }
   };
 
+  if (options.callback) {
+    options.callback(cy, g);
+  }
+
   nodes.layoutPositions(layout, options, function (ele) {
     ele = (typeof ele === 'undefined' ? 'undefined' : _typeof(ele)) === "object" ? ele : this;
     // If forcePosition avoid to compute the position according to dagra value but uses node position itself
@@ -294,6 +298,7 @@ var defaults = {
   rankDir: undefined, // 'TB' for top to bottom flow, 'LR' for left to right,
   ranker: undefined, // Type of algorithm to assigns a rank to each node in the input graph.
   // Possible values: network-simplex, tight-tree or longest-path
+  callback: function callback(cy, dagre) {},
   minLen: function minLen(edge) {
     return 1;
   }, // number of ranks to keep between the source and target of the edge
