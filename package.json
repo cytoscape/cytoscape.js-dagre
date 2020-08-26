@@ -1,6 +1,6 @@
 {
   "name": "cytoscape-dagre",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "description": "The Dagre layout for DAGs and trees for Cytoscape.js",
   "main": "cytoscape-dagre.js",
   "author": {
@@ -53,7 +53,7 @@
     "webpack-cli": "^3.3.12"
   },
   "peerDependencies": {
-    "cytoscape": "^3.15.2"
+    "cytoscape": "^3.2.22"
   },
   "dependencies": {
     "dagre": "^0.8.5"
