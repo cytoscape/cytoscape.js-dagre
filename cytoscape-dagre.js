@@ -7,7 +7,7 @@
 		exports["cytoscapeDagre"] = factory(require("dagre"));
 	else
 		root["cytoscapeDagre"] = factory(root["dagre"]);
-})(window, function(__WEBPACK_EXTERNAL_MODULE__4__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE__4__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
