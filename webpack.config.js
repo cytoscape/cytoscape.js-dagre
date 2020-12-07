@@ -15,7 +15,8 @@ let config = {
     path: path.join( __dirname ),
     filename: pkg.name + '.js',
     library: camelcase( pkg.name ),
-    libraryTarget: 'umd'
+    libraryTarget: 'umd',
+    globalObject: "this"
   },
   module: {
     rules: [
