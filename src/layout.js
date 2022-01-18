@@ -43,7 +43,9 @@ DagreLayout.prototype.run = function(){
   setGObj( 'edgesep', options.edgeSep );
   setGObj( 'ranksep', options.rankSep );
   setGObj( 'rankdir', options.rankDir );
+  setGObj( 'align', options.align);
   setGObj( 'ranker', options.ranker );
+  setGObj( 'acyclicer', options.acyclicer);
 
   g.setGraph( gObj );
 
