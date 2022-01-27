@@ -190,7 +190,9 @@ DagreLayout.prototype.run = function () {
   setGObj('edgesep', options.edgeSep);
   setGObj('ranksep', options.rankSep);
   setGObj('rankdir', options.rankDir);
+  setGObj('align', options.align);
   setGObj('ranker', options.ranker);
+  setGObj('acyclicer', options.acyclicer);
   g.setGraph(gObj);
   g.setDefaultEdgeLabel(function () {
     return {};
@@ -304,6 +306,8 @@ var defaults = {
   rankSep: undefined,
   // the separation between adjacent nodes in the same rank
   rankDir: undefined,
+  // alignment for rank nodes. Can be 'UL', 'UR', 'DL', or 'DR', where U = up, D = down, L = left, and R = right
+  align: undefined,
   // 'TB' for top to bottom flow, 'LR' for left to right,
   ranker: undefined,
   // Type of algorithm to assigns a rank to each node in the input graph.
