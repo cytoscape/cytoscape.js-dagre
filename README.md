@@ -83,7 +83,7 @@ var defaults = {
   boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
   transform: function( node, pos ){ return pos; }, // a function that applies a transform to the final node position
   ready: function(){}, // on layoutready
-  sort: undefined, // cytoscape sort function to sort the nodes and edges
+  sort: undefined, // a sorting function to order the nodes and edges; e.g. function(a, b){ return a.data('weight') - b.data('weight') }
   stop: function(){} // on layoutstop
 };
 ```
