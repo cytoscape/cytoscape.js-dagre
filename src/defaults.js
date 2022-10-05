@@ -25,6 +25,9 @@ let defaults = {
   transform: function( node, pos ){ return pos; }, // a function that applies a transform to the final node position
   ready: function(){}, // on layoutready
   sort: undefined, // a sorting function to order the nodes and edges; e.g. function(a, b){ return a.data('weight') - b.data('weight') }
+                   // because cytoscape dagre creates a directed graph, and directed graphs use the node order as a tie breaker when
+                   // defining the topology of a graph, this sort function can help ensure the correct order of the nodes/edges.
+                   // this feature is most useful when adding and removing the same nodes and edges multiple times in a graph.
   stop: function(){} // on layoutstop
 };
 
