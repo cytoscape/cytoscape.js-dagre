@@ -54,6 +54,11 @@ DagreLayout.prototype.run = function(){
 
   // add nodes to dagre
   let nodes = eles.nodes();
+
+  if ( isFunction(options.sort) ) {
+    nodes = nodes.sort( options.sort );
+  }
+
   for( let i = 0; i < nodes.length; i++ ){
     let node = nodes[i];
     let nbb = node.layoutDimensions( options );
@@ -80,6 +85,11 @@ DagreLayout.prototype.run = function(){
   let edges = eles.edges().stdFilter(function( edge ){
     return !edge.source().isParent() && !edge.target().isParent(); // dagre can't handle edges on compound nodes
   });
+
+  if ( isFunction(options.sort) ) {
+    edges = edges.sort( options.sort );
+  }
+
   for( let i = 0; i < edges.length; i++ ){
     let edge = edges[i];
 
