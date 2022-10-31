@@ -1,6 +1,6 @@
 {
   "name": "cytoscape-dagre",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "The Dagre layout for DAGs and trees for Cytoscape.js",
   "main": "cytoscape-dagre.js",
   "author": {
