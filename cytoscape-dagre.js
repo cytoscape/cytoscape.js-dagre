@@ -203,6 +203,10 @@ DagreLayout.prototype.run = function () {
 
   var nodes = eles.nodes();
 
+  if (isFunction(options.sort)) {
+    nodes = nodes.sort(options.sort);
+  }
+
   for (var i = 0; i < nodes.length; i++) {
     var node = nodes[i];
     var nbb = node.layoutDimensions(options);
@@ -226,6 +230,10 @@ DagreLayout.prototype.run = function () {
   var edges = eles.edges().stdFilter(function (edge) {
     return !edge.source().isParent() && !edge.target().isParent(); // dagre can't handle edges on compound nodes
   });
+
+  if (isFunction(options.sort)) {
+    edges = edges.sort(options.sort);
+  }
 
   for (var _i2 = 0; _i2 < edges.length; _i2++) {
     var edge = edges[_i2];
@@ -306,9 +314,12 @@ var defaults = {
   rankSep: undefined,
   // the separation between adjacent nodes in the same rank
   rankDir: undefined,
-  // alignment for rank nodes. Can be 'UL', 'UR', 'DL', or 'DR', where U = up, D = down, L = left, and R = right
-  align: undefined,
   // 'TB' for top to bottom flow, 'LR' for left to right,
+  align: undefined,
+  // alignment for rank nodes. Can be 'UL', 'UR', 'DL', or 'DR', where U = up, D = down, L = left, and R = right
+  acyclicer: undefined,
+  // If set to 'greedy', uses a greedy heuristic for finding a feedback arc set for a graph.
+  // A feedback arc set is a set of edges that can be removed to make a graph acyclic.
   ranker: undefined,
   // Type of algorithm to assigns a rank to each node in the input graph.
   // Possible values: network-simplex, tight-tree or longest-path
@@ -347,6 +358,11 @@ var defaults = {
   // a function that applies a transform to the final node position
   ready: function ready() {},
   // on layoutready
+  sort: undefined,
+  // a sorting function to order the nodes and edges; e.g. function(a, b){ return a.data('weight') - b.data('weight') }
+  // because cytoscape dagre creates a directed graph, and directed graphs use the node order as a tie breaker when
+  // defining the topology of a graph, this sort function can help ensure the correct order of the nodes/edges.
+  // this feature is most useful when adding and removing the same nodes and edges multiple times in a graph.
   stop: function stop() {} // on layoutstop
 
 };
