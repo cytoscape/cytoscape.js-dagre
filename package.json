@@ -33,7 +33,7 @@
   },
   "homepage": "https://github.com/cytoscape/cytoscape.js-dagre",
   "devDependencies": {
-    "@webpack-cli/serve": "^0.2.0",
+    "@webpack-cli/serve": "^2.0.1",
     "babel-core": "^6.26.3",
     "babel-loader": "^8.1.0",
     "babel-preset-env": "^1.7.0",
