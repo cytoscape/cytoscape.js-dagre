@@ -8,7 +8,7 @@ const MIN = env.MIN == 'true';
 const PROD = NODE_ENV === 'production';
 
 let config = {
-  mode: NODE_ENV,
+  mode: NODE_ENV, 
   devtool: PROD ? false : 'inline-source-map',
   entry: './src/index.js',
   output: {
@@ -26,6 +26,9 @@ let config = {
   externals: PROD ? Object.keys( pkg.dependencies || {} ) : [],
   optimization: {
     minimize: MIN
+  },
+  devServer: {
+    static: ['pages']
   }
 };
 
