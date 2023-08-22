@@ -8,7 +8,7 @@ const MIN = env.MIN == 'true';
 const PROD = NODE_ENV === 'production';
 
 let config = {
-  mode: 'development', // NODE_ENV,   // https://webpack.js.org/guides/production/#specify-the-mode
+  mode: NODE_ENV, 
   devtool: PROD ? false : 'inline-source-map',
   entry: './src/index.js',
   output: {
