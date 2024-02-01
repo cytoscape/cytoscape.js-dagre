@@ -2,7 +2,7 @@
   "name": "cytoscape-dagre",
   "version": "2.5.0",
   "description": "The Dagre layout for DAGs and trees for Cytoscape.js",
-  "main": "cytoscape-dagre.js",
+  "main": "src/index.js",
   "author": {
     "name": "Max Franz",
     "email": "maxkfranz@gmail.com"
