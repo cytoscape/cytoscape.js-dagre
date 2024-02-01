@@ -6,8 +6,28 @@
     <title>cytoscape-dagre.js demo</title>
 
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+    <style>
+      body { font-family: helvetica; font-size: 14px; }
+      #cy { width: 100%; height: 100%; position: absolute; left: 0; top: 0; z-index: 999; }
+      h1 { opacity: 0.5; font-size: 1em; }
+    </style>
 
-    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "@cytoscape/cytoscapejs": "../json-browser/src/js/vendor/modified/cytoscape.esm.js",
+          "@cytoscape/cytoscape-dagre": "./mjs-src/index.js",
+          "@dagrejs/dagre": "../dagre/mjs-lib/index.js",
+          "@dagrejs/graphlib": "../graphlib/mjs-lib/index.js",
+          "lodash": "https://cdn.jsdelivr.net/npm/lodash-es@4.17.21/lodash.min.js",
+          "heap": "../json-browser/src/js/vendor/modified/heap.mjs"
+        }
+      }
+    </script>
+
+
+    <!--script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script-->
 
     <!-- for testing with local version of cytoscape.js -->
     <!--<script src="../cytoscape.js/build/cytoscape.js"></script>-->
@@ -21,32 +41,17 @@
     <!--script src="cytoscape-dagre.min.js"></script-->
 
     <!-- for testing the package version w/ deps packed in, and min -->
-    <script src="cytoscape-dagre.min.pack.js"></script>
+    <!-- script src="cytoscape-dagre.min.pack.js"></script-->
 
-    <style>
-      body {
-        font-family: helvetica;
-        font-size: 14px;
-      }
 
-      #cy {
-        width: 100%;
-        height: 100%;
-        position: absolute;
-        left: 0;
-        top: 0;
-        z-index: 999;
-      }
+    <script type="module">
+      //import * as graphlib from "@dagrejs/graphlib";
+      //import * as dagre from "@dagrejs/dagre";
+      import { default as cytoscape } from "@cytoscape/cytoscapejs";
+      import { default as dagre } from "@cytoscape/cytoscape-dagre";
 
-      h1 {
-        opacity: 0.5;
-        font-size: 1em;
-      }
-    </style>
-
-    <script>
       window.addEventListener('DOMContentLoaded', function(){
-
+        cytoscape.use(dagre);
         var cy = window.cy = cytoscape({
           container: document.getElementById('cy'),
 
