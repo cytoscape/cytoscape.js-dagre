@@ -94,6 +94,8 @@ var defaults = {
 
 ## Build targets
 
+_Note: if you get cryptogrpah errors, try `export NODE_OPTIONS=--openssl-legacy-provider`_
+
 * `npm run test` : Run Mocha tests in `./test`
 * `npm run build` : Build `./src/**` into `cytoscape-dagre.js`
 * `npm run watch` : Automatically build on changes with live reloading (N.b. you must already have an HTTP server running)
