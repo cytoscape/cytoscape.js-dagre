@@ -5,6 +5,7 @@ const process = require('process');
 const env = process.env;
 const NODE_ENV = env.NODE_ENV;
 const MIN = env.MIN == 'true';
+const PACK = env.PACK == 'true';
 const PROD = NODE_ENV === 'production';
 
 let config = {
@@ -13,7 +14,7 @@ let config = {
   entry: './src/index.js',
   output: {
     path: path.join( __dirname ),
-    filename: pkg.name + '.js',
+    filename: MIN ? PACK ? pkg.name + ".min.pack.js" : pkg.name + ".min.js" : pkg.name + '.js',
     library: camelcase( pkg.name ),
     libraryTarget: 'umd',
     globalObject: "this"
@@ -23,7 +24,7 @@ let config = {
       { test: /\.js$/, exclude: /node_modules/, use: 'babel-loader' }
     ]
   },
-  externals: PROD ? Object.keys( pkg.dependencies || {} ) : [],
+  externals: PACK ? [] : Object.keys( pkg.dependencies || {} ),
   optimization: {
     minimize: MIN
   }
