@@ -17,18 +17,20 @@
     <!-- for testing with local version of cytoscape.js -->
     <!--script src="../cytoscape.js/build/cytoscape.umd.js"></script-->
 
-    <!-- for testing legacy umd style: we use an old version of dagre, instead
-      of @dagrejs/dagre, from when it still shipped with UMD. If you go
+    <!-- NB:
+      for testing legacy umd style: instead of @dagrejs/dagre,
+      we use an old version of dagre, from when it still shipped with UMD. If you go
       through the effort of packaging @dagrejs/dagre for UMD, you should edit
-      webpack.config.js so externals reads "@dagrejs/dagre", not "dagre". -->
+      webpack.config.js so externals reads "@dagrejs/dagre", not "dagre".
+    -->
     <!--script src="https://unpkg.com/dagre@0.7.4/dist/dagre.js"></script-->
-    <!--script src="cytoscape-dagre.js"></script-->
+    <!--script src="dist/cytoscape-dagre.umd.js"></script-->
     <!-- or -->
-    <!--script src="cytoscape-dagre.min.js"></script-->
+    <!--script src="dist/cytoscape-dagre.umd.min.js"></script-->
 
 
     <!-- for testing the package version w/ deps packed in, and min -->
-    <script src="cytoscape-dagre.min.pack.js"></script>
+    <script src="dist/cytoscape-dagre.umd.pack.min.js"></script>
 
     <script>
       window.addEventListener('DOMContentLoaded', function(){

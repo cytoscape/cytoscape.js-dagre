@@ -13,8 +13,8 @@ let config = {
   devtool: PROD ? false : 'inline-source-map',
   entry: './src/index.js',
   output: {
-    path: path.join( __dirname ),
-    filename: MIN ? PACK ? pkg.name + ".min.pack.js" : pkg.name + ".min.js" : pkg.name + '.js',
+    path: path.join( __dirname ) + "/dist/",
+    filename: MIN ? PACK ? pkg.name + ".umd.pack.min.js" : pkg.name + ".umd.min.js" : pkg.name + '.umd.js',
     library: camelcase( pkg.name ),
     libraryTarget: 'umd',
     globalObject: "this"
