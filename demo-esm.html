@@ -12,26 +12,29 @@
       h1 { opacity: 0.5; font-size: 1em; }
     </style>
 
-    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+    <!-- import maps help the browser where to find non-paths such as "@babel/cli" or "cytoscape" -->
+    <!-- but ESM imports are very strict with CORS- and the mime type cannot be text/plain, but text/javascript -->
+    <script type="importmap">
+      {
+        "imports": {
+          "cytoscape":        "https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.esm.min.js",
+          "cytoscape-dagre":  "./mjs-src/index.js",
+          "@dagrejs/dagre": "../dagre/mjs-lib/index.js",
+          "@dagrejs/graphlib": "../graphlib/mjs-lib/index.js"
+        }
+      }
+    </script>
 
-    <!-- for testing with local version of cytoscape.js -->
-    <!--script src="../cytoscape.js/build/cytoscape.umd.js"></script-->
+    <!-- We bundle our ESM modules so its dependencies are included.
+      If you had a pure-esm dependency tree, you can import without bundle as long
+      as the browser knows where to find each dependency! -->
 
-    <!-- for testing legacy umd style: we use an old version of dagre, instead
-      of @dagrejs/dagre, from when it still shipped with UMD. If you go
-      through the effort of packaging @dagrejs/dagre for UMD, you should edit
-      webpack.config.js so externals reads "@dagrejs/dagre", not "dagre". -->
-    <!--script src="https://unpkg.com/dagre@0.7.4/dist/dagre.js"></script-->
-    <!--script src="cytoscape-dagre.js"></script-->
-    <!-- or -->
-    <!--script src="cytoscape-dagre.min.js"></script-->
+    <script type="module">
+      import { default as cytoscape } from "cytoscape";
+      import { default as dagre } from "cytoscape-dagre";
 
-
-    <!-- for testing the package version w/ deps packed in, and min -->
-    <script src="cytoscape-dagre.min.pack.js"></script>
-
-    <script>
       window.addEventListener('DOMContentLoaded', function(){
+        cytoscape.use(dagre); // Notice this is explicitly called with ESM-style, just like nodejs.
         var cy = window.cy = cytoscape({
           container: document.getElementById('cy'),
 

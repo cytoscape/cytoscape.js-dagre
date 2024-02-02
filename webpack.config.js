@@ -34,7 +34,7 @@ let config = {
       }
     ]
   },
-  externals: PACK ? [] : Object.keys( pkg.dependencies || {} ),
+  externals: PACK ? [] : ["dagre"] ,
   optimization: {
     minimize: MIN
   }
