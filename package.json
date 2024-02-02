@@ -3,6 +3,11 @@
   "version": "2.5.0",
   "description": "The Dagre layout for DAGs and trees for Cytoscape.js",
   "main": "src/index.js",
+  "type": "module",
+  "export": {
+    "require": "src/index.js",
+    "import": "dist/cytoscape.esm.min.js"
+  },
   "author": {
     "name": "Max Franz",
     "email": "maxkfranz@gmail.com"
@@ -43,6 +48,11 @@
     "@babel/core": "^7.23.9",
     "@babel/plugin-transform-export-namespace-from": "^7.23.4",
     "@babel/plugin-transform-modules-commonjs": "^7.23.3",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-replace": "^5.0.5",
+    "@rollup/plugin-terser": "^0.4.4",
     "@webpack-cli/serve": "^0.2.0",
     "babel-core": "^6.26.3",
     "babel-loader": "^8.1.0",
@@ -57,6 +67,7 @@
     "mocha": "8.1.1",
     "npm-run-all": "^4.1.5",
     "rimraf": "^3.0.2",
+    "rollup-plugin-license": "^3.2.0",
     "update": "^0.7.4",
     "updater-license": "^1.0.0",
     "webpack": "^4.44.1",
@@ -67,6 +78,8 @@
     "cytoscape": "^3.2.22"
   },
   "dependencies": {
-    "@dagrejs/dagre": "^1.0.4"
+    "@dagrejs/dagre": "^1.0.4",
+    "rollup": "^4.9.6",
+    "save-dev": "^0.0.1-security"
   }
 }
