@@ -12,7 +12,7 @@
       h1 { opacity: 0.5; font-size: 1em; }
     </style>
 
-
+    <!-- an importmap i needed if you're using an unbundled pure-ESModule version of cytoscape -->
     <script type="importmap">
       {
         "imports": {
@@ -27,7 +27,7 @@
     </script>
 
 
-    <!--script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script-->
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
 
     <!-- for testing with local version of cytoscape.js -->
     <!--<script src="../cytoscape.js/build/cytoscape.js"></script>-->
@@ -41,14 +41,13 @@
     <!--script src="cytoscape-dagre.min.js"></script-->
 
     <!-- for testing the package version w/ deps packed in, and min -->
-    <!-- script src="cytoscape-dagre.min.pack.js"></script-->
+    <script src="cytoscape-dagre.min.pack.js"></script>
 
-
-    <script type="module">
-      //import * as graphlib from "@dagrejs/graphlib";
-      //import * as dagre from "@dagrejs/dagre";
-      import { default as cytoscape } from "@cytoscape/cytoscapejs";
-      import { default as dagre } from "@cytoscape/cytoscape-dagre";
+    <!--Uncomment this and the import lines to test the ESM version -->
+    <!--script type="module"-->
+    <script>
+      //import { default as cytoscape } from "@cytoscape/cytoscapejs";
+      //import { default as dagre } from "@cytoscape/cytoscape-dagre";
 
       window.addEventListener('DOMContentLoaded', function(){
         cytoscape.use(dagre);
