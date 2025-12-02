@@ -16,7 +16,7 @@
     "build:min": "cross-env NODE_ENV=production MIN=true webpack",
     "build:release": "run-s build copyright",
     "watch": "cross-env NODE_ENV=development webpack --progress --watch",
-    "dev": "webpack-dev-server --open",
+    "dev": "webpack serve --open",
     "test": "mocha"
   },
   "repository": {
@@ -48,14 +48,14 @@
     "rimraf": "^3.0.2",
     "update": "^0.7.4",
     "updater-license": "^1.0.0",
-    "webpack": "^4.44.1",
-    "webpack-dev-server": "^3.11.0",
-    "webpack-cli": "^3.3.12"
+    "webpack": "^5.89.0",
+    "webpack-dev-server": "^4.15.1",
+    "webpack-cli": "^5.1.4"
   },
   "peerDependencies": {
     "cytoscape": "^3.2.22"
   },
   "dependencies": {
-    "dagre": "^0.8.5"
+    "@dagrejs/dagre": "^2.0.1"
   }
 }

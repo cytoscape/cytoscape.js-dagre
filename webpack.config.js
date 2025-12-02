@@ -14,8 +14,10 @@ let config = {
   output: {
     path: path.join( __dirname ),
     filename: pkg.name + '.js',
-    library: camelcase( pkg.name ),
-    libraryTarget: 'umd',
+    library: {
+      name: camelcase( pkg.name ),
+      type: 'umd'
+    },
     globalObject: "this"
   },
   module: {
@@ -23,7 +25,7 @@ let config = {
       { test: /\.js$/, exclude: /node_modules/, use: 'babel-loader' }
     ]
   },
-  externals: PROD ? Object.keys( pkg.dependencies || {} ) : [],
+  externals: [],
   optimization: {
     minimize: MIN
   }
