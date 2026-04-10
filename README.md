@@ -7,12 +7,12 @@ cytoscape-dagre
 
 The Dagre layout for DAGs and trees for Cytoscape.js ([demo](https://cytoscape.github.io/cytoscape.js-dagre))
 
-The `dagre` layout organises the graph using a DAG (directed acyclic graph) system, written by [Chris Pettitt](https://www.linkedin.com/in/chrismpettitt).  It is especially suitable for DAGs and trees.  For more information, please refer to [Dagre's documentation](https://github.com/cpettitt/dagre).
+The `dagre` layout organises the graph using a DAG (directed acyclic graph) system, written by [Chris Pettitt](https://www.linkedin.com/in/chrismpettitt).  It is especially suitable for DAGs and trees.  For more information, please refer to [Dagre's documentation](https://github.com/dagrejs/dagre).
 
 ## Dependencies
 
  * Cytoscape.js ^3.2.0
- * Dagre ^0.8.2
+ * @dagrejs/dagre ^2.0.1
 
 
 ## Usage instructions
