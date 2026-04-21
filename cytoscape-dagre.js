@@ -197,8 +197,6 @@ DagreLayout.prototype.run = function () {
       height: nbb.h,
       name: node.id()
     });
-
-    // console.log( g.node(node.id()) );
   }
 
   // set compound parents
@@ -223,8 +221,6 @@ DagreLayout.prototype.run = function () {
       weight: getVal(edge, options.edgeWeight),
       name: edge.id()
     }, edge.id());
-
-    // console.log( g.edge(edge.source().id(), edge.target().id(), edge.id()) );
   }
   dagre.layout(g);
   var gNodeIds = g.nodes();
@@ -279,10 +275,36 @@ DagreLayout.prototype.run = function () {
       var id = gEdgeIds[i];
       var e = g.edge(id);
       if (e && e.points) {
-        console.log(e);
+        for (var p = 0; p < e.points.length; p++) {
+          // console.log(e.points[p]);
+
+          if (e.points[p]) {
+            // console.log('punt', e.points[p]);
+            cy.add({
+              data: {
+                id: "edgepoint_".concat(id.name, "__d").concat(p),
+                classes: 'edgepoint'
+              },
+              position: {
+                x: e.points[p].x,
+                y: e.points[p].y
+              },
+              selectable: false,
+              grabbable: false
+            });
+          }
+        }
       }
     }
+    cy.stylesheet().selector('.edgepoint').style({
+      'background-color': '#ff0000',
+      'width': 8,
+      'height': 8,
+      'shape': 'diamond'
+    });
+    cy.update();
   }
+  console.log('hallo');
   return this; // chaining
 };
 module.exports = DagreLayout;
