@@ -189,8 +189,8 @@ DagreLayout.prototype.run = function () {
   if (isFunction(options.sort)) {
     nodes = nodes.sort(options.sort);
   }
-  for (var i = 0; i < nodes.length; i++) {
-    var node = nodes[i];
+  for (var _i = 0; _i < nodes.length; _i++) {
+    var node = nodes[_i];
     var nbb = node.layoutDimensions(options);
     g.setNode(node.id(), {
       width: nbb.w,
@@ -202,8 +202,8 @@ DagreLayout.prototype.run = function () {
   }
 
   // set compound parents
-  for (var _i = 0; _i < nodes.length; _i++) {
-    var _node = nodes[_i];
+  for (var _i2 = 0; _i2 < nodes.length; _i2++) {
+    var _node = nodes[_i2];
     if (_node.isChild()) {
       g.setParent(_node.id(), _node.parent().id());
     }
@@ -216,8 +216,8 @@ DagreLayout.prototype.run = function () {
   if (isFunction(options.sort)) {
     edges = edges.sort(options.sort);
   }
-  for (var _i2 = 0; _i2 < edges.length; _i2++) {
-    var edge = edges[_i2];
+  for (var _i3 = 0; _i3 < edges.length; _i3++) {
+    var edge = edges[_i3];
     g.setEdge(edge.source().id(), edge.target().id(), {
       minlen: getVal(edge, options.minLen),
       weight: getVal(edge, options.edgeWeight),
@@ -228,10 +228,10 @@ DagreLayout.prototype.run = function () {
   }
   dagre.layout(g);
   var gNodeIds = g.nodes();
-  for (var _i3 = 0; _i3 < gNodeIds.length; _i3++) {
-    var id = gNodeIds[_i3];
-    var n = g.node(id);
-    cy.getElementById(id).scratch().dagre = n;
+  for (var _i4 = 0; _i4 < gNodeIds.length; _i4++) {
+    var _id = gNodeIds[_i4];
+    var n = g.node(_id);
+    cy.getElementById(_id).scratch().dagre = n;
   }
   var dagreBB;
   if (options.boundingBox) {
@@ -273,6 +273,16 @@ DagreLayout.prototype.run = function () {
       y: dModel.y
     });
   });
+  if (true | options.useDagreCurves) {
+    var gEdgeIds = g.edges();
+    for (var i = 0; i < gEdgeIds.length; i++) {
+      var id = gEdgeIds[i];
+      var e = g.edge(id);
+      if (e && e.points) {
+        console.log(e);
+      }
+    }
+  }
   return this; // chaining
 };
 module.exports = DagreLayout;
@@ -317,6 +327,8 @@ var defaults = {
   // Applies a multiplicative factor (>0) to expand or compress the overall area that the nodes take up
   nodeDimensionsIncludeLabels: false,
   // whether labels should be included in determining the space used by a node
+  useDagreCurves: false,
+  // uses dagre's midpoints and the associated bezier curves instead of cytoscape edge styling
   animate: false,
   // whether to transition the node positions
   animateFilter: function animateFilter(node, i) {

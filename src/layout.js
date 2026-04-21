@@ -156,6 +156,19 @@ DagreLayout.prototype.run = function(){
     });
   });
 
+  if (true | options.useDagreCurves) {
+    var gEdgeIds = g.edges();
+  
+    for( var i = 0; i < gEdgeIds.length; i++ ){
+      var id = gEdgeIds[i];
+      var e = g.edge( id );
+
+      if (e && e.points) {
+        console.log(e);
+      }
+    }
+  }
+
   return this; // chaining
 };
 
