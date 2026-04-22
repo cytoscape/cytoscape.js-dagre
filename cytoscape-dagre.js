@@ -98,94 +98,77 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var impl = __webpack_require__(1); // registers the extension on a cytoscape lib ref
+var impl = __webpack_require__(1);
 
-
+// registers the extension on a cytoscape lib ref
 var register = function register(cytoscape) {
   if (!cytoscape) {
     return;
   } // can't register if cytoscape unspecified
 
-
   cytoscape('layout', 'dagre', impl); // register with cytoscape.js
 };
-
 if (typeof cytoscape !== 'undefined') {
   // expose to global cytoscape (i.e. window.cytoscape)
   register(cytoscape);
 }
-
 module.exports = register;
 
 /***/ }),
 /* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 var isFunction = function isFunction(o) {
   return typeof o === 'function';
 };
-
 var defaults = __webpack_require__(2);
-
 var assign = __webpack_require__(3);
+var dagre = __webpack_require__(4);
 
-var dagre = __webpack_require__(4); // constructor
+// constructor
 // options : object containing layout options
-
-
 function DagreLayout(options) {
   this.options = assign({}, defaults, options);
-} // runs the layout
+}
 
-
+// runs the layout
 DagreLayout.prototype.run = function () {
   var options = this.options;
   var layout = this;
   var cy = options.cy; // cy is automatically populated for us in the constructor
-
   var eles = options.eles;
-
   var getVal = function getVal(ele, val) {
     return isFunction(val) ? val.apply(ele, [ele]) : val;
   };
-
   var bb = options.boundingBox || {
     x1: 0,
     y1: 0,
     w: cy.width(),
     h: cy.height()
   };
-
   if (bb.x2 === undefined) {
     bb.x2 = bb.x1 + bb.w;
   }
-
   if (bb.w === undefined) {
     bb.w = bb.x2 - bb.x1;
   }
-
   if (bb.y2 === undefined) {
     bb.y2 = bb.y1 + bb.h;
   }
-
   if (bb.h === undefined) {
     bb.h = bb.y2 - bb.y1;
   }
-
   var g = new dagre.graphlib.Graph({
     multigraph: true,
     compound: true
   });
   var gObj = {};
-
   var setGObj = function setGObj(name, val) {
     if (val != null) {
       gObj[name] = val;
     }
   };
-
   setGObj('nodesep', options.nodeSep);
   setGObj('edgesep', options.edgeSep);
   setGObj('ranksep', options.rankSep);
@@ -199,14 +182,13 @@ DagreLayout.prototype.run = function () {
   });
   g.setDefaultNodeLabel(function () {
     return {};
-  }); // add nodes to dagre
+  });
 
+  // add nodes to dagre
   var nodes = eles.nodes();
-
   if (isFunction(options.sort)) {
     nodes = nodes.sort(options.sort);
   }
-
   for (var i = 0; i < nodes.length; i++) {
     var node = nodes[i];
     var nbb = node.layoutDimensions(options);
@@ -214,47 +196,44 @@ DagreLayout.prototype.run = function () {
       width: nbb.w,
       height: nbb.h,
       name: node.id()
-    }); // console.log( g.node(node.id()) );
-  } // set compound parents
+    });
 
+    // console.log( g.node(node.id()) );
+  }
 
+  // set compound parents
   for (var _i = 0; _i < nodes.length; _i++) {
     var _node = nodes[_i];
-
     if (_node.isChild()) {
       g.setParent(_node.id(), _node.parent().id());
     }
-  } // add edges to dagre
+  }
 
-
+  // add edges to dagre
   var edges = eles.edges().stdFilter(function (edge) {
     return !edge.source().isParent() && !edge.target().isParent(); // dagre can't handle edges on compound nodes
   });
-
   if (isFunction(options.sort)) {
     edges = edges.sort(options.sort);
   }
-
   for (var _i2 = 0; _i2 < edges.length; _i2++) {
     var edge = edges[_i2];
     g.setEdge(edge.source().id(), edge.target().id(), {
       minlen: getVal(edge, options.minLen),
       weight: getVal(edge, options.edgeWeight),
       name: edge.id()
-    }, edge.id()); // console.log( g.edge(edge.source().id(), edge.target().id(), edge.id()) );
-  }
+    }, edge.id());
 
+    // console.log( g.edge(edge.source().id(), edge.target().id(), edge.id()) );
+  }
   dagre.layout(g);
   var gNodeIds = g.nodes();
-
   for (var _i3 = 0; _i3 < gNodeIds.length; _i3++) {
     var id = gNodeIds[_i3];
     var n = g.node(id);
     cy.getElementById(id).scratch().dagre = n;
   }
-
   var dagreBB;
-
   if (options.boundingBox) {
     dagreBB = {
       x1: Infinity,
@@ -274,7 +253,6 @@ DagreLayout.prototype.run = function () {
   } else {
     dagreBB = bb;
   }
-
   var constrainPos = function constrainPos(p) {
     if (options.boundingBox) {
       var xPct = dagreBB.w === 0 ? 0 : (p.x - dagreBB.x1) / dagreBB.w;
@@ -287,7 +265,6 @@ DagreLayout.prototype.run = function () {
       return p;
     }
   };
-
   nodes.layoutPositions(layout, options, function (ele) {
     ele = _typeof(ele) === "object" ? ele : this;
     var dModel = ele.scratch().dagre;
@@ -298,7 +275,6 @@ DagreLayout.prototype.run = function () {
   });
   return this; // chaining
 };
-
 module.exports = DagreLayout;
 
 /***/ }),
@@ -331,6 +307,7 @@ var defaults = {
     return 1;
   },
   // higher weight edges are generally made shorter and straighter than lower weight edges
+
   // general layout options
   fit: true,
   // whether to fit to viewport
@@ -364,7 +341,6 @@ var defaults = {
   // defining the topology of a graph, this sort function can help ensure the correct order of the nodes/edges.
   // this feature is most useful when adding and removing the same nodes and edges multiple times in a graph.
   stop: function stop() {} // on layoutstop
-
 };
 module.exports = defaults;
 
@@ -373,11 +349,11 @@ module.exports = defaults;
 /***/ (function(module, exports) {
 
 // Simple, internal Object.assign() polyfill for options objects etc.
+
 module.exports = Object.assign != null ? Object.assign.bind(Object) : function (tgt) {
   for (var _len = arguments.length, srcs = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
     srcs[_key - 1] = arguments[_key];
   }
-
   srcs.forEach(function (src) {
     Object.keys(src).forEach(function (k) {
       return tgt[k] = src[k];
