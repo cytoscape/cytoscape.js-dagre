@@ -153,6 +153,16 @@ DagreLayout.prototype.run = function(){
   });
 
   if (true | options.useDagreCurves) {
+    cy.style()
+      .selector('node.edgepoint')
+      .style({
+        'background-color': '#ff0000',
+        'width': 8,
+        'height': 8,
+        'shape': 'diamond' 
+      })
+      .update();
+
     var gEdgeIds = g.edges();
   
     for (var i = 0; i < gEdgeIds.length; i++ ) {
@@ -167,9 +177,9 @@ DagreLayout.prototype.run = function(){
             // console.log('punt', e.points[p]);
             cy.add({
               data: {
-                id: `edgepoint_${id.name}__d${p}`,
-                classes: 'edgepoint'
+                id: `edgepoint_${id.name}__d${p}`
               },
+              classes: 'edgepoint',
               position: {
                 x: e.points[p].x,
                 y: e.points[p].y
@@ -181,20 +191,10 @@ DagreLayout.prototype.run = function(){
         }
       }
     }
-
-    cy.stylesheet()
-      .selector('.edgepoint')
-      .style({
-          'background-color': '#ff0000',
-          'width': 8,
-          'height': 8,
-          'shape': 'diamond'
-        });
-
-    cy.update();
+      
+    console.log('edges', cy.nodes('.edgepoint').length);
   }
 
-  console.log('hallo');
   return this; // chaining
 };
 
