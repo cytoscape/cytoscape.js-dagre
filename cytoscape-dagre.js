@@ -132,6 +132,40 @@ function DagreLayout(options) {
   this.options = assign({}, defaults, options);
 }
 
+// adds visible nodes for all the edge control points.
+function debugEdge(cy, id, e) {
+  if (e.points && defaults.debugDagreCurves) {
+    for (var p = 0; p < e.points.length; p++) {
+      // console.log(e.points[p]);
+
+      if (e.points[p]) {
+        cy.add({
+          data: {
+            id: "edgepoint_".concat(id.name, "__d").concat(p)
+          },
+          classes: 'edgepoint',
+          position: {
+            x: e.points[p].x,
+            y: e.points[p].y
+          },
+          selectable: false,
+          grabbable: false
+        });
+      }
+    }
+  }
+}
+function addEdgePointStyle(cy, options) {
+  if (options.debugDagreCurves) {
+    cy.style().selector('node.edgepoint').style({
+      'background-color': '#ff0000',
+      'width': 8,
+      'height': 8,
+      'shape': 'diamond'
+    }).update();
+  }
+}
+
 // runs the layout
 DagreLayout.prototype.run = function () {
   var options = this.options;
@@ -269,40 +303,16 @@ DagreLayout.prototype.run = function () {
       y: dModel.y
     });
   });
-  if (true | options.useDagreCurves) {
-    cy.style().selector('node.edgepoint').style({
-      'background-color': '#ff0000',
-      'width': 8,
-      'height': 8,
-      'shape': 'diamond'
-    }).update();
+  if (options.useDagreCurves) {
+    addEdgePointStyle(cy, options);
     var gEdgeIds = g.edges();
     for (var i = 0; i < gEdgeIds.length; i++) {
       var id = gEdgeIds[i];
       var e = g.edge(id);
       if (e && e.points) {
-        for (var p = 0; p < e.points.length; p++) {
-          // console.log(e.points[p]);
-
-          if (e.points[p]) {
-            // console.log('punt', e.points[p]);
-            cy.add({
-              data: {
-                id: "edgepoint_".concat(id.name, "__d").concat(p)
-              },
-              classes: 'edgepoint',
-              position: {
-                x: e.points[p].x,
-                y: e.points[p].y
-              },
-              selectable: false,
-              grabbable: false
-            });
-          }
-        }
+        debugEdge(cy, id, e);
       }
     }
-    console.log('edges', cy.nodes('.edgepoint').length);
   }
   return this; // chaining
 };
@@ -348,8 +358,10 @@ var defaults = {
   // Applies a multiplicative factor (>0) to expand or compress the overall area that the nodes take up
   nodeDimensionsIncludeLabels: false,
   // whether labels should be included in determining the space used by a node
-  useDagreCurves: false,
+  useDagreCurves: true,
   // uses dagre's midpoints and the associated bezier curves instead of cytoscape edge styling
+  debugDagreCurves: true,
+  // visualizes dagre's Bezier control points
   animate: false,
   // whether to transition the node positions
   animateFilter: function animateFilter(node, i) {

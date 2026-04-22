@@ -9,6 +9,44 @@ function DagreLayout( options ){
   this.options = assign( {}, defaults, options );
 }
 
+// adds visible nodes for all the edge control points.
+function debugEdge(cy, id, e) {
+  if (e.points && defaults.debugDagreCurves) {
+    for (var p = 0; p < e.points.length; p++) {
+      // console.log(e.points[p]);
+
+      if (e.points[p]) {
+        cy.add({
+          data: {
+            id: `edgepoint_${id.name}__d${p}`
+          },
+          classes: 'edgepoint',
+          position: {
+            x: e.points[p].x,
+            y: e.points[p].y
+          },
+          selectable: false,
+          grabbable: false
+        });
+      }
+    }
+  }
+}
+
+function addEdgePointStyle(cy, options) {
+  if (options.debugDagreCurves) {
+      cy.style()
+        .selector('node.edgepoint')
+        .style({
+          'background-color': '#ff0000',
+          'width': 8,
+          'height': 8,
+          'shape': 'diamond' 
+        })
+        .update();
+    }
+}
+
 // runs the layout
 DagreLayout.prototype.run = function(){
   let options = this.options;
@@ -152,16 +190,8 @@ DagreLayout.prototype.run = function(){
     });
   });
 
-  if (true | options.useDagreCurves) {
-    cy.style()
-      .selector('node.edgepoint')
-      .style({
-        'background-color': '#ff0000',
-        'width': 8,
-        'height': 8,
-        'shape': 'diamond' 
-      })
-      .update();
+  if (options.useDagreCurves) {
+    addEdgePointStyle(cy, options);
 
     var gEdgeIds = g.edges();
   
@@ -170,29 +200,9 @@ DagreLayout.prototype.run = function(){
       var e = g.edge( id );
 
       if (e && e.points) {
-        for (var p = 0; p < e.points.length; p++) {
-          // console.log(e.points[p]);
-
-          if (e.points[p]) {
-            // console.log('punt', e.points[p]);
-            cy.add({
-              data: {
-                id: `edgepoint_${id.name}__d${p}`
-              },
-              classes: 'edgepoint',
-              position: {
-                x: e.points[p].x,
-                y: e.points[p].y
-              },
-              selectable: false,
-              grabbable: false
-            });
-          }
-        }
+        debugEdge(cy, id, e);
       }
     }
-      
-    console.log('edges', cy.nodes('.edgepoint').length);
   }
 
   return this; // chaining
