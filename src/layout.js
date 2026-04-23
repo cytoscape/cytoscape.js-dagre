@@ -70,16 +70,16 @@ function addEdgePointStyle(cy, options) {
 }
 
 function projectPoint(P, src, frame) {
-  const MIN = 0.5;
-  const vx = (P.x - src.x) * 1.0;
-  const vy = (P.y - src.y) * 1.0;
+  const MIN = 0.01;
+  const vx = (P.x - src.x) * 1.1;
+  const vy = (P.y - src.y) * 1.1;
 
   const t = Math.abs(vx) < 0.1 ? 0 : (vx * frame.dir.x + vy * frame.dir.y) / frame.len;
   var d = Math.abs(vx) < 0.1 ? 0.5 : (vx * frame.perp.x + vy * frame.perp.y);
 
   // bezier curves do not work well with exactly perpendicular control points
-  if (d < MIN) {
-      d = (d >= 0 ? 1 : -1) * MIN;
+  if (Math.abs(d) < MIN) {
+      d = (d < 0 ? -1 : 1) * MIN;
   }
 
   return { t, d };
