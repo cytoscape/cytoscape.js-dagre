@@ -135,9 +135,7 @@ function DagreLayout(options) {
 // adds visible nodes for all the edge control points.
 function debugEdge(cy, id, e) {
   if (e.points && defaults.debugDagreCurves) {
-    for (var p = 0; p < e.points.length; p++) {
-      // console.log(e.points[p]);
-
+    for (var p = 1; p < e.points.length - 1; p++) {
       if (e.points[p]) {
         cy.add({
           data: {
@@ -155,15 +153,67 @@ function debugEdge(cy, id, e) {
     }
   }
 }
+function segmentsToBezierCurves(points) {
+  var tension = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1.5;
+  var result = [];
+  for (var i = 0; i < points.length - 1; i++) {
+    var p0 = points[i - 1] || points[i];
+    var p1 = points[i];
+    var p2 = points[i + 1];
+    var p3 = points[i + 2] || p2;
+    var c1 = {
+      x: p1.x + (p2.x - p0.x) / 6 * tension,
+      y: p1.y + (p2.y - p0.y) / 6 * tension
+    };
+    var c2 = {
+      x: p2.x - (p3.x - p1.x) / 6 * tension,
+      y: p2.y - (p3.y - p1.y) / 6 * tension
+    };
+    result.push({
+      p1: p1,
+      c1: c1,
+      c2: c2,
+      p2: p2
+    });
+  }
+  return result;
+}
 function addEdgePointStyle(cy, options) {
-  if (options.debugDagreCurves) {
+  if (true | options.debugDagreCurves) {
     cy.style().selector('node.edgepoint').style({
       'background-color': '#ff0000',
       'width': 8,
       'height': 8,
       'shape': 'diamond'
     }).update();
+    cy.style().selector('edge[cpd]').style({
+      'curve-style': 'unbundled-bezier',
+      'control-point-weights': 'data(cpw)',
+      'control-point-distances': 'data(cpd)'
+    }).update();
   }
+}
+
+/* Transforms the x/y position of Dagre's middle Bezier edge control point to 
+ * the distance perpendicular to the direct line from source to target, as expected 
+ * by the `control-point-distances` of Cytoscape's `unbundled-bezier` edge style.
+ * We also produce a weight for each point a weight for `control-points-weights`
+ * to simulate exactlty the same shape as Dagre would show.
+ */
+function cytoControlPoint(source, target, control) {
+  var dx = target.x - source.x;
+  var dy = target.y - source.y;
+  var len = Math.hypot(dx, dy) || 1;
+  var ux = dx / len;
+  var uy = dy / len;
+  var px = -uy;
+  var py = ux;
+  var vx = control.x - source.x;
+  var vy = control.y - source.y;
+  return {
+    weight: (vx * ux + vy * uy) / len,
+    distance: vx * px + vy * py
+  };
 }
 
 // runs the layout
@@ -303,16 +353,38 @@ DagreLayout.prototype.run = function () {
       y: dModel.y
     });
   });
-  if (options.useDagreCurves) {
-    addEdgePointStyle(cy, options);
+  if (true | options.useDagreCurves) {
+    cy.remove('edge'); // remove all existing edges on the cytoscape side (we will make new ones below)
+
     var gEdgeIds = g.edges();
     for (var i = 0; i < gEdgeIds.length; i++) {
       var id = gEdgeIds[i];
       var e = g.edge(id);
       if (e && e.points) {
         debugEdge(cy, id, e);
+        var curves = segmentsToBezierCurves(e.points);
+        var weights = [];
+        var distances = [];
+        curves.forEach(function (seg) {
+          var _cytoControlPoint = cytoControlPoint(seg.p1, seg.p2, seg.c1),
+            w = _cytoControlPoint.weight,
+            d = _cytoControlPoint.distance;
+          weights.push(w);
+          distances.push(d * 2.5);
+        });
+        cy.add({
+          data: {
+            id: "edge__".concat(id.v, "_").concat(id.w),
+            source: id.v,
+            target: id.w,
+            cpw: weights,
+            cpd: distances
+          },
+          classes: 'edge'
+        });
       }
     }
+    addEdgePointStyle(cy, options);
   }
   return this; // chaining
 };
