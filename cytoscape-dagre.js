@@ -119,6 +119,12 @@ module.exports = register;
 /***/ (function(module, exports, __webpack_require__) {
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
+function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) { n[e] = r[e]; } return n; }
 var isFunction = function isFunction(o) {
   return typeof o === 'function';
 };
@@ -153,30 +159,33 @@ function debugEdge(cy, id, e) {
     }
   }
 }
-function segmentsToBezierCurves(points) {
-  var tension = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1.5;
-  var result = [];
-  for (var i = 0; i < points.length - 1; i++) {
-    var p0 = points[i - 1] || points[i];
-    var p1 = points[i];
-    var p2 = points[i + 1];
-    var p3 = points[i + 2] || p2;
-    var c1 = {
-      x: p1.x + (p2.x - p0.x) / 6 * tension,
-      y: p1.y + (p2.y - p0.y) / 6 * tension
-    };
-    var c2 = {
-      x: p2.x - (p3.x - p1.x) / 6 * tension,
-      y: p2.y - (p3.y - p1.y) / 6 * tension
-    };
-    result.push({
-      p1: p1,
-      c1: c1,
-      c2: c2,
-      p2: p2
-    });
-  }
-  return result;
+
+/* provides the context for mapping from dagre's x, y coordinate system
+ * for control points to cytoscapes coordinate system for control points
+ * which is relative to the straight vector from source to target node
+ */
+function buildFrame(src, tgt) {
+  var dx = tgt.x - src.x;
+  var dy = tgt.y - src.y;
+  var len = Math.hypot(dx, dy) || 1;
+  var dir = {
+    x: dx / len,
+    y: dy / len
+  };
+  var perp = {
+    x: -dir.y,
+    y: dir.x
+  };
+  console.log('frame', {
+    dir: dir,
+    perp: perp,
+    len: len
+  });
+  return {
+    dir: dir,
+    perp: perp,
+    len: len
+  };
 }
 function addEdgePointStyle(cy, options) {
   if (true | options.debugDagreCurves) {
@@ -193,26 +202,70 @@ function addEdgePointStyle(cy, options) {
     }).update();
   }
 }
-
-/* Transforms the x/y position of Dagre's middle Bezier edge control point to 
- * the distance perpendicular to the direct line from source to target, as expected 
- * by the `control-point-distances` of Cytoscape's `unbundled-bezier` edge style.
- * We also produce a weight for each point a weight for `control-points-weights`
- * to simulate exactlty the same shape as Dagre would show.
- */
-function cytoControlPoint(source, target, control) {
-  var dx = target.x - source.x;
-  var dy = target.y - source.y;
-  var len = Math.hypot(dx, dy) || 1;
-  var ux = dx / len;
-  var uy = dy / len;
-  var px = -uy;
-  var py = ux;
-  var vx = control.x - source.x;
-  var vy = control.y - source.y;
+function projectPoint(P, src, frame) {
+  var vx = (P.x - src.x) * 1.0;
+  var vy = (P.y - src.y) * 1.0;
+  var t = Math.abs(vx) < 0.1 ? 0 : (vx * frame.dir.x + vy * frame.dir.y) / frame.len;
+  var d = Math.abs(vx) < 0.1 ? 0.5 : vx * frame.perp.x + vy * frame.perp.y;
+  if (d === 0) {
+    d = 0.1;
+  }
+  console.log({
+    t: t,
+    d: d
+  });
   return {
-    weight: (vx * ux + vy * uy) / len,
-    distance: vx * px + vy * py
+    t: t,
+    d: d
+  };
+}
+function sanitize(points) {
+  var out = [];
+  for (var i = 0; i < points.length; i++) {
+    var p = points[i];
+    if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y)) {
+      continue;
+    }
+    var prev = out[out.length - 1];
+    if (prev && Math.hypot(p.x - prev.x, p.y - prev.y) < 0.1) {
+      continue;
+    }
+    out.push(p);
+  }
+  return out;
+}
+function dagreToCytoscape(id, edge) {
+  var frame = buildFrame(edge.points[0], edge.points[edge.points.length - 1]);
+  var points = sanitize(edge.points);
+  var cpw = [];
+  var cpd = [];
+  for (var i = 0; i < points.length; i++) {
+    var _projectPoint = projectPoint(points[i], points[0], frame),
+      t = _projectPoint.t,
+      d = _projectPoint.d;
+    cpw.push(t);
+    cpd.push(d);
+  }
+  return {
+    cpw: cpw,
+    cpd: cpd
+  };
+}
+function normalizeCPW(cpw) {
+  var min = Math.min.apply(Math, _toConsumableArray(cpw));
+  var max = Math.max.apply(Math, _toConsumableArray(cpw));
+  var range = max - min || 1;
+  return cpw.map(function (v) {
+    return (v - min) / range;
+  });
+}
+function dagreEdgeToCy(id, edge) {
+  var _dagreToCytoscape = dagreToCytoscape(id, edge),
+    cpw = _dagreToCytoscape.cpw,
+    cpd = _dagreToCytoscape.cpd;
+  return {
+    cpw: normalizeCPW(cpw),
+    cpd: cpd
   };
 }
 
@@ -362,23 +415,16 @@ DagreLayout.prototype.run = function () {
       var e = g.edge(id);
       if (e && e.points) {
         debugEdge(cy, id, e);
-        var curves = segmentsToBezierCurves(e.points);
-        var weights = [];
-        var distances = [];
-        curves.forEach(function (seg) {
-          var _cytoControlPoint = cytoControlPoint(seg.p1, seg.p2, seg.c1),
-            w = _cytoControlPoint.weight,
-            d = _cytoControlPoint.distance;
-          weights.push(w);
-          distances.push(d * 2.5);
-        });
+        var _dagreEdgeToCy = dagreEdgeToCy(id, e),
+          cpw = _dagreEdgeToCy.cpw,
+          cpd = _dagreEdgeToCy.cpd;
         cy.add({
           data: {
             id: "edge__".concat(id.v, "_").concat(id.w),
             source: id.v,
             target: id.w,
-            cpw: weights,
-            cpd: distances
+            cpw: cpw,
+            cpd: cpd
           },
           classes: 'edge'
         });

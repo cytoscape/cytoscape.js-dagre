@@ -31,29 +31,21 @@ function debugEdge(cy, id, e) {
   }
 }
 
-function segmentsToBezierCurves(points, tension = 1.5) {
-  const result = [];
+/* provides the context for mapping from dagre's x, y coordinate system
+ * for control points to cytoscapes coordinate system for control points
+ * which is relative to the straight vector from source to target node
+ */
+function buildFrame(src, tgt) {
+  const dx = tgt.x - src.x;
+  const dy = tgt.y - src.y;
 
-  for (let i = 0; i < points.length - 1; i++) {
-    var p0 = points[i - 1] || points[i];
-    var p1 = points[i];
-    var p2 = points[i + 1];
-    var p3 = points[i + 2] || p2;
+  const len = Math.hypot(dx, dy) || 1;
 
-    var c1 = {
-      x: p1.x + (p2.x - p0.x) / 6 * tension,
-      y: p1.y + (p2.y - p0.y) / 6 * tension
-    };
+  const dir = { x: dx / len, y: dy / len };
+  const perp = { x: -dir.y, y: dir.x };
 
-    var c2 = {
-      x: p2.x - (p3.x - p1.x) / 6 * tension,
-      y: p2.y - (p3.y - p1.y) / 6 * tension
-    };
-
-    result.push({ p1, c1, c2, p2 });
-  }
-
-  return result;
+  console.log('frame', { dir, perp, len });
+  return { dir, perp, len };
 }
 
 function addEdgePointStyle(cy, options) {
@@ -77,29 +69,76 @@ function addEdgePointStyle(cy, options) {
     }
 }
 
-/* Transforms the x/y position of Dagre's middle Bezier edge control point to 
- * the distance perpendicular to the direct line from source to target, as expected 
- * by the `control-point-distances` of Cytoscape's `unbundled-bezier` edge style.
- * We also produce a weight for each point a weight for `control-points-weights`
- * to simulate exactlty the same shape as Dagre would show.
- */
-function cytoControlPoint(source, target, control) {
-  var dx = target.x - source.x;
-  var dy = target.y - source.y;
-  var len = Math.hypot(dx, dy) || 1;
+function projectPoint(P, src, frame) {
+  const MIN = 0.5;
+  const vx = (P.x - src.x) * 1.0;
+  const vy = (P.y - src.y) * 1.0;
 
-  var ux = dx / len;
-  var uy = dy / len;
+  const t = Math.abs(vx) < 0.1 ? 0 : (vx * frame.dir.x + vy * frame.dir.y) / frame.len;
+  var d = Math.abs(vx) < 0.1 ? 0.5 : (vx * frame.perp.x + vy * frame.perp.y);
 
-  var px = -uy;
-  var py = ux;
+  // bezier curves do not work well with exactly perpendicular control points
+  if (d < MIN) {
+      d = (d >= 0 ? 1 : -1) * MIN;
+  }
 
-  var vx = control.x - source.x;
-  var vy = control.y - source.y;
+  return { t, d };
+}
 
-  return { 
-    weight: (vx * ux + vy * uy) / len,
-    distance: vx * px + vy * py,
+function sanitize(points) {
+  const out = [];
+
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i];
+
+    if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y)) {
+      continue;
+    }
+
+    const prev = out[out.length - 1];
+    if (prev && Math.hypot(p.x - prev.x, p.y - prev.y) < 0.1) {
+      continue;
+    }
+
+    out.push(p);
+  }
+
+  return out;
+}
+
+
+function dagreToCytoscape(id, edge) {
+  const frame = buildFrame(edge.points[0], edge.points[edge.points.length-1]);
+
+  const points = sanitize(edge.points);
+
+  const cpw = [];
+  const cpd = [];
+
+  for (let i = 0; i < points.length; i++) {
+    const { t, d } = projectPoint(points[i], points[0], frame);
+
+    cpw.push(t);
+    cpd.push(d);
+  }
+
+  return { cpw, cpd };
+}
+
+function normalizeCPW(cpw) {
+  const min = Math.min(...cpw);
+  const max = Math.max(...cpw);
+  const range = max - min || 1;
+
+  return cpw.map(v => (v - min) / range);
+}
+
+function dagreEdgeToCy(id, edge) {
+  const { cpw, cpd } = dagreToCytoscape(id, edge);
+
+  return {
+    cpw: normalizeCPW(cpw),
+    cpd
   };
 }
 
@@ -247,34 +286,25 @@ DagreLayout.prototype.run = function(){
   });
 
   if (true | options.useDagreCurves) {
-   
     cy.remove('edge'); // remove all existing edges on the cytoscape side (we will make new ones below)
 
     var gEdgeIds = g.edges();
   
     for (var i = 0; i < gEdgeIds.length; i++ ) {
       var id = gEdgeIds[i];
-      var e = g.edge( id );
+      var e = g.edge(id);
 
       if (e && e.points) {
         debugEdge(cy, id, e);
-        var curves = segmentsToBezierCurves(e.points);
-        var weights = [];
-        var distances= [];
-
-        curves.forEach(seg => {
-          const { weight: w, distance: d } = cytoControlPoint(seg.p1, seg.p2, seg.c1);
-          weights.push(w);
-          distances.push(d * 2.5);
-        });
-
+        const { cpw, cpd } = dagreEdgeToCy(id, e);
+    
         cy.add({
           data: {
             id: `edge__${id.v}_${id.w}`,
             source: id.v,
             target: id.w,
-            cpw: weights,
-            cpd: distances
+            cpw: cpw,
+            cpd: cpd
           },
           classes: 'edge',
         });
