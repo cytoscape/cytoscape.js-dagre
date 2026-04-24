@@ -2,6 +2,7 @@ const isFunction = function(o){ return typeof o === 'function'; };
 const defaults = require('./defaults');
 const assign = require('./assign');
 const dagre = require('dagre');
+const EPSILON = 0.01; // what does it mean to be too close to 0?
 
 // constructor
 // options : object containing layout options
@@ -44,8 +45,7 @@ function buildFrame(src, tgt) {
   const dir = { x: dx / len, y: dy / len };
   const perp = { x: -dir.y, y: dir.x };
 
-  console.log('frame', { dir, perp, len });
-  return { dir, perp, len };
+  return { src, tgt, dir, perp, len };
 }
 
 function addEdgePointStyle(cy, options) {
@@ -69,17 +69,16 @@ function addEdgePointStyle(cy, options) {
     }
 }
 
-function projectPoint(P, src, frame) {
-  const MIN = 0.01;
-  const vx = (P.x - src.x) * 1.1;
-  const vy = (P.y - src.y) * 1.1;
+function projectPoint(P, frame) {
+  const vx = (P.x - frame.src.x) * 1.1;
+  const vy = (P.y - frame.src.y) * 1.1;
 
   const t = Math.abs(vx) < 0.1 ? 0 : (vx * frame.dir.x + vy * frame.dir.y) / frame.len;
   var d = Math.abs(vx) < 0.1 ? 0.5 : (vx * frame.perp.x + vy * frame.perp.y);
 
   // bezier curves do not work well with exactly perpendicular control points
-  if (Math.abs(d) < MIN) {
-      d = (d < 0 ? -1 : 1) * MIN;
+  if (Math.abs(d) < EPSILON) {
+      d = (d < 0 ? -1 : 1) * EPSILON;
   }
 
   return { t, d };
@@ -96,7 +95,7 @@ function sanitize(points) {
     }
 
     const prev = out[out.length - 1];
-    if (prev && Math.hypot(p.x - prev.x, p.y - prev.y) < 0.1) {
+    if (prev && Math.hypot(p.x - prev.x, p.y - prev.y) < EPSILON) {
       continue;
     }
 
@@ -106,17 +105,15 @@ function sanitize(points) {
   return out;
 }
 
-
-function dagreToCytoscape(id, edge) {
-  const frame = buildFrame(edge.points[0], edge.points[edge.points.length-1]);
-
-  const points = sanitize(edge.points);
+function dagreToCytoscape(dEdge) {
+  const frame = buildFrame(dEdge.points[0], dEdge.points[dEdge.points.length-1]);
+  const points = sanitize(dEdge.points);
 
   const cpw = [];
   const cpd = [];
 
   for (let i = 0; i < points.length; i++) {
-    const { t, d } = projectPoint(points[i], points[0], frame);
+    const { t, d } = projectPoint(points[i], frame);
 
     cpw.push(t);
     cpd.push(d);
@@ -125,7 +122,7 @@ function dagreToCytoscape(id, edge) {
   return { cpw, cpd };
 }
 
-function normalizeCPW(cpw) {
+function normalizeWeight(cpw) {
   const min = Math.min(...cpw);
   const max = Math.max(...cpw);
   const range = max - min || 1;
@@ -134,10 +131,10 @@ function normalizeCPW(cpw) {
 }
 
 function dagreEdgeToCy(id, edge) {
-  const { cpw, cpd } = dagreToCytoscape(id, edge);
+  const { cpw, cpd } = dagreToCytoscape(edge);
 
   return {
-    cpw: normalizeCPW(cpw),
+    cpw: normalizeWeight(cpw),
     cpd
   };
 }
@@ -286,32 +283,26 @@ DagreLayout.prototype.run = function(){
   });
 
   if (true | options.useDagreCurves) {
-    cy.remove('edge'); // remove all existing edges on the cytoscape side (we will make new ones below)
+    cy.batch(() => {
+      // remove all existing edges on the cytoscape side (we will make new ones below)
+      // cy.remove('edge'); 
+      addEdgePointStyle(cy, options);
 
-    var gEdgeIds = g.edges();
-  
-    for (var i = 0; i < gEdgeIds.length; i++ ) {
-      var id = gEdgeIds[i];
-      var e = g.edge(id);
-
-      if (e && e.points) {
-        debugEdge(cy, id, e);
-        const { cpw, cpd } = dagreEdgeToCy(id, e);
+      var gEdgeIds = g.edges();
     
-        cy.add({
-          data: {
-            id: `edge__${id.v}_${id.w}`,
-            source: id.v,
-            target: id.w,
-            cpw: cpw,
-            cpd: cpd
-          },
-          classes: 'edge',
-        });
-      }
-    }
+      for (var i = 0; i < gEdgeIds.length; i++ ) {
+        var id = gEdgeIds[i];
+        const cyEdge = cy.getElementById(id.name);
+        var e = g.edge(id);
 
-    addEdgePointStyle(cy, options);
+        if (e && e.points) {
+          debugEdge(cy, id, e);
+          cyEdge.data(dagreEdgeToCy(id, e));
+        }
+      }
+
+      
+    });
   }
 
   return this; // chaining

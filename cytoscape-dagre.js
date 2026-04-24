@@ -131,6 +131,7 @@ var isFunction = function isFunction(o) {
 var defaults = __webpack_require__(2);
 var assign = __webpack_require__(3);
 var dagre = __webpack_require__(4);
+var EPSILON = 0.01; // what does it mean to be too close to 0?
 
 // constructor
 // options : object containing layout options
@@ -176,12 +177,9 @@ function buildFrame(src, tgt) {
     x: -dir.y,
     y: dir.x
   };
-  console.log('frame', {
-    dir: dir,
-    perp: perp,
-    len: len
-  });
   return {
+    src: src,
+    tgt: tgt,
     dir: dir,
     perp: perp,
     len: len
@@ -202,16 +200,15 @@ function addEdgePointStyle(cy, options) {
     }).update();
   }
 }
-function projectPoint(P, src, frame) {
-  var MIN = 0.01;
-  var vx = (P.x - src.x) * 1.1;
-  var vy = (P.y - src.y) * 1.1;
+function projectPoint(P, frame) {
+  var vx = (P.x - frame.src.x) * 1.1;
+  var vy = (P.y - frame.src.y) * 1.1;
   var t = Math.abs(vx) < 0.1 ? 0 : (vx * frame.dir.x + vy * frame.dir.y) / frame.len;
   var d = Math.abs(vx) < 0.1 ? 0.5 : vx * frame.perp.x + vy * frame.perp.y;
 
   // bezier curves do not work well with exactly perpendicular control points
-  if (Math.abs(d) < MIN) {
-    d = (d < 0 ? -1 : 1) * MIN;
+  if (Math.abs(d) < EPSILON) {
+    d = (d < 0 ? -1 : 1) * EPSILON;
   }
   return {
     t: t,
@@ -226,20 +223,20 @@ function sanitize(points) {
       continue;
     }
     var prev = out[out.length - 1];
-    if (prev && Math.hypot(p.x - prev.x, p.y - prev.y) < 0.1) {
+    if (prev && Math.hypot(p.x - prev.x, p.y - prev.y) < EPSILON) {
       continue;
     }
     out.push(p);
   }
   return out;
 }
-function dagreToCytoscape(id, edge) {
-  var frame = buildFrame(edge.points[0], edge.points[edge.points.length - 1]);
-  var points = sanitize(edge.points);
+function dagreToCytoscape(dEdge) {
+  var frame = buildFrame(dEdge.points[0], dEdge.points[dEdge.points.length - 1]);
+  var points = sanitize(dEdge.points);
   var cpw = [];
   var cpd = [];
   for (var i = 0; i < points.length; i++) {
-    var _projectPoint = projectPoint(points[i], points[0], frame),
+    var _projectPoint = projectPoint(points[i], frame),
       t = _projectPoint.t,
       d = _projectPoint.d;
     cpw.push(t);
@@ -250,7 +247,7 @@ function dagreToCytoscape(id, edge) {
     cpd: cpd
   };
 }
-function normalizeCPW(cpw) {
+function normalizeWeight(cpw) {
   var min = Math.min.apply(Math, _toConsumableArray(cpw));
   var max = Math.max.apply(Math, _toConsumableArray(cpw));
   var range = max - min || 1;
@@ -259,11 +256,11 @@ function normalizeCPW(cpw) {
   });
 }
 function dagreEdgeToCy(id, edge) {
-  var _dagreToCytoscape = dagreToCytoscape(id, edge),
+  var _dagreToCytoscape = dagreToCytoscape(edge),
     cpw = _dagreToCytoscape.cpw,
     cpd = _dagreToCytoscape.cpd;
   return {
-    cpw: normalizeCPW(cpw),
+    cpw: normalizeWeight(cpw),
     cpd: cpd
   };
 }
@@ -325,8 +322,8 @@ DagreLayout.prototype.run = function () {
   if (isFunction(options.sort)) {
     nodes = nodes.sort(options.sort);
   }
-  for (var _i = 0; _i < nodes.length; _i++) {
-    var node = nodes[_i];
+  for (var i = 0; i < nodes.length; i++) {
+    var node = nodes[i];
     var nbb = node.layoutDimensions(options);
     g.setNode(node.id(), {
       width: nbb.w,
@@ -336,8 +333,8 @@ DagreLayout.prototype.run = function () {
   }
 
   // set compound parents
-  for (var _i2 = 0; _i2 < nodes.length; _i2++) {
-    var _node = nodes[_i2];
+  for (var _i = 0; _i < nodes.length; _i++) {
+    var _node = nodes[_i];
     if (_node.isChild()) {
       g.setParent(_node.id(), _node.parent().id());
     }
@@ -350,8 +347,8 @@ DagreLayout.prototype.run = function () {
   if (isFunction(options.sort)) {
     edges = edges.sort(options.sort);
   }
-  for (var _i3 = 0; _i3 < edges.length; _i3++) {
-    var edge = edges[_i3];
+  for (var _i2 = 0; _i2 < edges.length; _i2++) {
+    var edge = edges[_i2];
     g.setEdge(edge.source().id(), edge.target().id(), {
       minlen: getVal(edge, options.minLen),
       weight: getVal(edge, options.edgeWeight),
@@ -360,10 +357,10 @@ DagreLayout.prototype.run = function () {
   }
   dagre.layout(g);
   var gNodeIds = g.nodes();
-  for (var _i4 = 0; _i4 < gNodeIds.length; _i4++) {
-    var _id = gNodeIds[_i4];
-    var n = g.node(_id);
-    cy.getElementById(_id).scratch().dagre = n;
+  for (var _i3 = 0; _i3 < gNodeIds.length; _i3++) {
+    var id = gNodeIds[_i3];
+    var n = g.node(id);
+    cy.getElementById(id).scratch().dagre = n;
   }
   var dagreBB;
   if (options.boundingBox) {
@@ -406,30 +403,21 @@ DagreLayout.prototype.run = function () {
     });
   });
   if (true | options.useDagreCurves) {
-    cy.remove('edge'); // remove all existing edges on the cytoscape side (we will make new ones below)
-
-    var gEdgeIds = g.edges();
-    for (var i = 0; i < gEdgeIds.length; i++) {
-      var id = gEdgeIds[i];
-      var e = g.edge(id);
-      if (e && e.points) {
-        debugEdge(cy, id, e);
-        var _dagreEdgeToCy = dagreEdgeToCy(id, e),
-          cpw = _dagreEdgeToCy.cpw,
-          cpd = _dagreEdgeToCy.cpd;
-        cy.add({
-          data: {
-            id: "edge__".concat(id.v, "_").concat(id.w),
-            source: id.v,
-            target: id.w,
-            cpw: cpw,
-            cpd: cpd
-          },
-          classes: 'edge'
-        });
+    cy.batch(function () {
+      // remove all existing edges on the cytoscape side (we will make new ones below)
+      // cy.remove('edge'); 
+      addEdgePointStyle(cy, options);
+      var gEdgeIds = g.edges();
+      for (var i = 0; i < gEdgeIds.length; i++) {
+        var id = gEdgeIds[i];
+        var cyEdge = cy.getElementById(id.name);
+        var e = g.edge(id);
+        if (e && e.points) {
+          debugEdge(cy, id, e);
+          cyEdge.data(dagreEdgeToCy(id, e));
+        }
       }
-    }
-    addEdgePointStyle(cy, options);
+    });
   }
   return this; // chaining
 };
