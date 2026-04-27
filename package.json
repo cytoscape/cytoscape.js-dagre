@@ -56,6 +56,6 @@
     "cytoscape": "^3.2.22"
   },
   "dependencies": {
-    "@dagrejs/dagre": "^2.0.1"
+    "@dagrejs/dagre": "^3.0.0"
   }
 }

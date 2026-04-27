@@ -12,8 +12,12 @@ describe('dagre layout', function(){
         { data: { id: 'n0' } },
         { data: { id: 'n1' } },
         { data: { id: 'n2' } },
+        { data: { id: 'n3' } },
+        { data: { id: 'n4' } },
         { data: { id: 'e0', source: 'n0', target: 'n1' } },
-        { data: { id: 'e1', source: 'n1', target: 'n2' } }
+        { data: { id: 'e1', source: 'n1', target: 'n2' } },
+        { data: { id: 'e2', source: 'n1', target: 'n3' } },
+        { data: { id: 'e3', source: 'n3', target: 'n4' } }
       ]
     });
 
@@ -28,6 +32,16 @@ describe('dagre layout', function(){
       expect( position.y ).to.be.a('number');
     });
 
-    expect( cy.getElementById('n0').position('y') ).to.be.below( cy.getElementById('n2').position('y') );
+    let n0 = cy.getElementById('n0').position();
+    let n1 = cy.getElementById('n1').position();
+    let n2 = cy.getElementById('n2').position();
+    let n3 = cy.getElementById('n3').position();
+    let n4 = cy.getElementById('n4').position();
+
+    expect( n0.y ).to.be.below( n1.y );
+    expect( n1.y ).to.be.below( n2.y );
+    expect( n1.y ).to.be.below( n3.y );
+    expect( n3.y ).to.be.below( n4.y );
+    expect( n2.x ).to.not.equal( n3.x );
   });
 });
