@@ -134,6 +134,14 @@ function addSmoothEndpoints(src, tgt, points, endpointTangentLength = 25) {
   ];
 }
 
+function normalizeWeight(cpw) {
+  const min = Math.min(...cpw);
+  const max = Math.max(...cpw);
+  const range = max - min || 1;
+
+  return cpw.map(v => (v - min) / range);
+}
+
 /* First introduce new control points to bridge between the dagre list of 
  * points and the centres of cytoscape nodes.
  * Then we sanitize any empty or non-existing or degenerate control points
@@ -161,14 +169,6 @@ function dagreEdgeToCytoscapeEdge(dEdge, cyEdge) {
   cpw = normalizeWeight(cpw);
 
   return { cpw, cpd };
-}
-
-function normalizeWeight(cpw) {
-  const min = Math.min(...cpw);
-  const max = Math.max(...cpw);
-  const range = max - min || 1;
-
-  return cpw.map(v => (v - min) / range);
 }
 
 // runs the layout
