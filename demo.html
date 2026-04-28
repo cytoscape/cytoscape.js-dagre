@@ -53,7 +53,8 @@
             {
               selector: 'node',
               style: {
-                'background-color': '#11479e'
+                'background-color': '#11479e',
+                'background-opacity': '0.5'
               }
             },
 
@@ -96,6 +97,7 @@
               { data: { source: 'n0', target: 'n3' } }, // skips a layer to introduce a midpoint
               { data: { source: 'n4', target: 'n5' } },
               { data: { source: 'n4', target: 'n9' } }, // skips a few layers to introduce more midpoints
+              
               { data: { source: 'n4', target: 'n6' } },
               { data: { source: 'n6', target: 'n7' } },
               { data: { source: 'n6', target: 'n8' } },
@@ -105,6 +107,7 @@
               { data: { source: 'n12', target: 'n13' } },
               { data: { source: 'n13', target: 'n14' } },
               { data: { source: 'n13', target: 'n15' } },
+              { data: { source: 'n9', target: 'n4' } }, // long back edge
             ]
           }
         });

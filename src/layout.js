@@ -2,7 +2,7 @@ const isFunction = function(o){ return typeof o === 'function'; };
 const defaults = require('./defaults');
 const assign = require('./assign');
 const dagre = require('dagre');
-const EPSILON = 0.01; // what does it mean to be too close to 0?
+const EPSILON = 0.001; // what does it mean to be too close to 0?
 
 // constructor
 // options : object containing layout options
@@ -11,9 +11,31 @@ function DagreLayout( options ){
 }
 
 // adds visible nodes for all the edge control points.
-function debugEdge(cy, id, e) {
+function debugEdge(cy, id, cyEdge, e) {
   if (e.points && defaults.debugDagreCurves) {
-    for (var p = 1; p < e.points.length - 1; p++) {
+    cy.add({
+      data: {
+       id: `edgepoint_src_${id.name}`
+      },
+      classes: 'sourcepoint',
+      position: {
+        x: cyEdge.source().position().x,
+        y: cyEdge.source().position().y
+      }
+    });
+
+    cy.add({
+      data: {
+       id: `edgepoint_target_${id.name}`
+      },
+      classes: 'targetpoint',
+      position: {
+        x: cyEdge.target().position().x,
+        y: cyEdge.target().position().y
+      }
+    });
+
+    for (var p = 0; p < e.points.length - 1; p++) {
       if (e.points[p]) {
         cy.add({
           data: {
@@ -32,20 +54,35 @@ function debugEdge(cy, id, e) {
   }
 }
 
+function sub(a, b) {
+  return { x: a.x - b.x, y: a.y - b.y };
+}
+
+function dot(a, b) {
+  return a.x * b.x + a.y * b.y;
+}
+
+function norm(v) {
+  const len = Math.hypot(v.x, v.y) || 1;
+  return { x: v.x / len, y: v.y / len, len };
+}
+
+function perp(v) {
+  return { x: -v.y, y: v.x };
+}
+
 /* provides the context for mapping from dagre's x, y coordinate system
  * for control points to cytoscapes coordinate system for control points
  * which is relative to the straight vector from source to target node
  */
 function buildFrame(src, tgt) {
-  const dx = tgt.x - src.x;
-  const dy = tgt.y - src.y;
+  const d = sub(tgt, src);
+  const { x, y, len } = norm(d);
 
-  const len = Math.hypot(dx, dy) || 1;
+  const dir = { x, y };
+  const normal = perp(dir);
 
-  const dir = { x: dx / len, y: dy / len };
-  const perp = { x: -dir.y, y: dir.x };
-
-  return { src, tgt, dir, perp, len };
+  return { src, tgt, dir, normal, len };
 }
 
 function addEdgePointStyle(cy, options) {
@@ -60,6 +97,24 @@ function addEdgePointStyle(cy, options) {
         })
         .update();
       cy.style()
+        .selector('node.sourcepoint')
+        .style({
+          'background-color': '#ff0000',
+          'width': 8,
+          'height': 8,
+          'shape': 'triangle' 
+        })
+        .update();
+      cy.style()
+        .selector('node.targetpoint')
+        .style({
+          'background-color': '#00ff00',
+          'width': 8,
+          'height': 8,
+          'shape': 'square' 
+        })
+        .update();
+      cy.style()
         .selector('edge[cpd]')
         .style({
           'curve-style' : 'unbundled-bezier',
@@ -69,19 +124,73 @@ function addEdgePointStyle(cy, options) {
     }
 }
 
-function projectPoint(P, frame) {
-  const vx = (P.x - frame.src.x) * 1.1;
-  const vy = (P.y - frame.src.y) * 1.1;
-
-  const t = Math.abs(vx) < 0.1 ? 0 : (vx * frame.dir.x + vy * frame.dir.y) / frame.len;
-  var d = Math.abs(vx) < 0.1 ? 0.5 : (vx * frame.perp.x + vy * frame.perp.y);
-
-  // bezier curves do not work well with exactly perpendicular control points
-  if (Math.abs(d) < EPSILON) {
-      d = (d < 0 ? -1 : 1) * EPSILON;
+function noZero(x) {
+  if (Math.abs(x) < EPSILON) {
+    return x < 0 ? -EPSILON : EPSILON;
   }
 
-  return { t, d };
+  return x;
+}
+
+function projectPoint(P, frame) {
+  const v = sub(P, frame.src);
+  const w = noZero(dot(v, frame.dir) / frame.len);
+  const d = noZero(dot(v, frame.normal));
+
+  return { w, d };
+}
+
+function stabilizePreEnd(prev, end, beta = 0.5) {
+  return {
+    x: prev.x * (1 - beta) + end.x * beta,
+    y: prev.y * (1 - beta) + end.y * beta
+  };
+}
+
+function interpolate(a, b) {
+  return {
+    x: (a.x + b.x) / 2,
+    y: (a.y + b.y) / 2
+  };
+}
+
+function add(a, b) {
+  return { x: a.x + b.x, y: a.y + b.y };
+}
+
+function scale(v, s) {
+  return { x: v.x * s, y: v.y * s };
+}
+
+function lerp(a, b, t) {
+  return add(a, scale(sub(b, a), t));
+}
+
+function direction(a, b) {
+  return norm({ x: b.x - a.x, y: b.y - a.y });
+}
+
+
+function createEndpoints(src, tgt, points, k = 40) {
+  if (points.length === 0) return [];
+
+  const first = points[0];
+  const last = points[points.length - 1];
+
+  const dirOut = direction(src, first);
+  const dirIn  = direction(last, tgt);
+
+  const startCtrl = {
+    x: src.x + dirOut.x * k,
+    y: src.y + dirOut.y * k
+  };
+
+  const endCtrl = {
+    x: tgt.x - dirIn.x * k,
+    y: tgt.y - dirIn.y * k
+  };
+
+  return [startCtrl, ...points, endCtrl];
 }
 
 function sanitize(points) {
@@ -105,19 +214,29 @@ function sanitize(points) {
   return out;
 }
 
-function dagreToCytoscape(dEdge) {
-  const frame = buildFrame(dEdge.points[0], dEdge.points[dEdge.points.length-1]);
-  const points = sanitize(dEdge.points);
+/* First we overwrite the first and last points of the dagre solution
+ * with the original source and target positions according to cytoscape.js
+ * Then we sanitize any empty or non-existing or degenerate control points
+ * And finally we map the Dagre coordinates to the Cytoscape coordinated which
+ * are relative to the original direction vector from source to target.
+ */
+function dagreToCytoscape(dEdge, cyEdge) {
+  const from = cyEdge.source().position();
+  const to = cyEdge.target().position();
+  const frame = buildFrame(from, to);
+  const points = createEndpoints(from, to, sanitize(dEdge.points));
 
-  const cpw = [];
-  const cpd = [];
+  var cpw = [];
+  var cpd = [];
 
-  for (let i = 0; i < points.length; i++) {
-    const { t, d } = projectPoint(points[i], frame);
+  points.forEach(p => {
+    const { w, d } = projectPoint(p, frame);
 
-    cpw.push(t);
+    cpw.push(w);
     cpd.push(d);
-  }
+  });
+
+  cpw = normalizeWeight(cpw);
 
   return { cpw, cpd };
 }
@@ -128,15 +247,6 @@ function normalizeWeight(cpw) {
   const range = max - min || 1;
 
   return cpw.map(v => (v - min) / range);
-}
-
-function dagreEdgeToCy(id, edge) {
-  const { cpw, cpd } = dagreToCytoscape(edge);
-
-  return {
-    cpw: normalizeWeight(cpw),
-    cpd
-  };
 }
 
 // runs the layout
@@ -283,25 +393,17 @@ DagreLayout.prototype.run = function(){
   });
 
   if (true | options.useDagreCurves) {
-    cy.batch(() => {
-      // remove all existing edges on the cytoscape side (we will make new ones below)
-      // cy.remove('edge'); 
-      addEdgePointStyle(cy, options);
+      // moving nodes around does not make sense with dagre edge layout
+    addEdgePointStyle(cy, options);
+  
+    g.edges().forEach(id => {
+      const cyEdge = cy.getElementById(id.name);
+      const dEdge = g.edge(id);
 
-      var gEdgeIds = g.edges();
-    
-      for (var i = 0; i < gEdgeIds.length; i++ ) {
-        var id = gEdgeIds[i];
-        const cyEdge = cy.getElementById(id.name);
-        var e = g.edge(id);
-
-        if (e && e.points) {
-          debugEdge(cy, id, e);
-          cyEdge.data(dagreEdgeToCy(id, e));
-        }
+      if (dEdge && dEdge.points) {
+        debugEdge(cy, id, cyEdge, dEdge);
+        cyEdge.data(dagreToCytoscape(dEdge, cyEdge));
       }
-
-      
     });
   }
 
