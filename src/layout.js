@@ -140,38 +140,11 @@ function projectPoint(P, frame) {
   return { w, d };
 }
 
-function stabilizePreEnd(prev, end, beta = 0.5) {
-  return {
-    x: prev.x * (1 - beta) + end.x * beta,
-    y: prev.y * (1 - beta) + end.y * beta
-  };
-}
-
-function interpolate(a, b) {
-  return {
-    x: (a.x + b.x) / 2,
-    y: (a.y + b.y) / 2
-  };
-}
-
-function add(a, b) {
-  return { x: a.x + b.x, y: a.y + b.y };
-}
-
-function scale(v, s) {
-  return { x: v.x * s, y: v.y * s };
-}
-
-function lerp(a, b, t) {
-  return add(a, scale(sub(b, a), t));
-}
-
 function direction(a, b) {
   return norm({ x: b.x - a.x, y: b.y - a.y });
 }
 
-
-function createEndpoints(src, tgt, points, k = 40) {
+function createEndpoints(src, tgt, points, k = 50) {
   if (points.length === 0) return [];
 
   const first = points[0];
