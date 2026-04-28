@@ -12,7 +12,7 @@ function DagreLayout( options ){
 
 // adds visible nodes for all the edge control points.
 function debugEdge(cy, id, cyEdge, e) {
-  if (e.points && defaults.debugDagreCurves) {
+  if (e.points && defaults.debugDagreEdgeControlPoints) {
     e.points.forEach((p, i) => {
       cy.add({
         data: {
@@ -30,11 +30,11 @@ function debugEdge(cy, id, cyEdge, e) {
   }
 }
 
-function sub(a, b) {
+function subtract(a, b) {
   return { x: a.x - b.x, y: a.y - b.y };
 }
 
-function dot(a, b) {
+function product(a, b) {
   return a.x * b.x + a.y * b.y;
 }
 
@@ -51,8 +51,8 @@ function perp(v) {
  * for control points to cytoscapes coordinate system for control points
  * which is relative to the straight vector from source to target node
  */
-function buildFrame(src, tgt) {
-  const d = sub(tgt, src);
+function buildEdgeFrame(src, tgt) {
+  const d = subtract(tgt, src);
   const { x, y, len } = norm(d);
 
   const dir = { x, y };
@@ -62,24 +62,24 @@ function buildFrame(src, tgt) {
 }
 
 function addEdgePointStyle(cy, options) {
-  if (true | options.debugDagreCurves) {
-      cy.style()
-        .selector('node.edgepoint')
-        .style({
-          'background-color': '#ff0000',
-          'width': 8,
-          'height': 8,
-          'shape': 'diamond' 
-        })
-        .update();
-      cy.style()
-        .selector('edge[cpd]')
-        .style({
-          'curve-style' : 'unbundled-bezier',
-          'control-point-weights': 'data(cpw)',
-          'control-point-distances': 'data(cpd)',
-        }).update();
-    }
+  if (options.debugDagreCurves) {
+    cy.style()
+      .selector('node.edgepoint')
+      .style({
+        'background-color': '#ff0000',
+        'width': 8,
+        'height': 8,
+        'shape': 'diamond' 
+      })
+      .update();
+  }
+  cy.style()
+    .selector('edge[cpd]')
+    .style({
+      'curve-style' : 'unbundled-bezier',
+      'control-point-weights': 'data(cpw)',
+      'control-point-distances': 'data(cpd)',
+    }).update();
 }
 
 function noZero(x) {
@@ -90,10 +90,10 @@ function noZero(x) {
   return x;
 }
 
-function projectPoint(P, frame) {
-  const v = sub(P, frame.src);
-  const w = noZero(dot(v, frame.dir) / frame.len);
-  const d = noZero(dot(v, frame.normal));
+function toEdgeCoordinates(P, frame) {
+  const v = subtract(P, frame.src);
+  const w = noZero(product(v, frame.dir) / frame.len);
+  const d = noZero(product(v, frame.normal));
 
   return { w, d };
 }
@@ -102,40 +102,29 @@ function direction(a, b) {
   return norm({ x: noZero(b.x - a.x), y: noZero(b.y - a.y) });
 }
 
-function length(a, b) {
-  return Math.hypot(b.x - a.x, b.y - a.y);
-}
-
-function computeK(src, tgt) {
-  const d = length(src, tgt);
-
-  // base tuning constants (you will tweak these once)
-  const minK = 39;
-  const maxK = 42;
-
-  // smooth scaling (sqrt prevents extreme growth)
-  const k = Math.sqrt(d) * 6;
-
-  return Math.max(minK, Math.min(maxK, k));
-}
-
-function createEndpoints(src, tgt, points, k = computeK(src, tgt)) {
+function addSmoothEndpoints(src, tgt, points, endpointTangentLength = 25) {
   if (!points || points.length === 0) return [];
 
   const first = points[0];
   const last = points[points.length - 1];
 
+  // here is where we "force" dagre's control points to play
+  // nice with the usage of bezier curve by cytoscape. 
+  // we introduce a control point between dagres first
+  // and the source position of the node, and also the 
+  // same for the last control point and the target node position. 
+  
   const dirOut = direction(src, first);
   const dirIn  = direction(last, tgt);
 
   const startCtrl = {
-    x: src.x + dirOut.x * k,
-    y: src.y + dirOut.y * k
+    x: src.x + dirOut.x * endpointTangentLength,
+    y: src.y + dirOut.y * endpointTangentLength
   };
 
   const endCtrl = {
-    x: tgt.x - dirIn.x * k,
-    y: tgt.y - dirIn.y * k
+    x: tgt.x - dirIn.x * endpointTangentLength,
+    y: tgt.y - dirIn.y * endpointTangentLength
   };
 
   return [
@@ -145,51 +134,25 @@ function createEndpoints(src, tgt, points, k = computeK(src, tgt)) {
   ];
 }
 
-function sanitize(points) {
-  const out = [];
-
-  for (let i = 0; i < points.length; i++) {
-    const p = points[i];
-
-    if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y)) {
-      continue;
-    }
-
-    const prev = out[out.length - 1];
-    if (prev && Math.hypot(p.x - prev.x, p.y - prev.y) < EPSILON) {
-      continue;
-    }
-
-    out.push(p);
-  }
-
-  return out;
-}
-
-function unproject(t, d, src, frame) {
-  return {
-    x: src.x + frame.x * t + frame.norm.x * d,
-    y: src.y + frame.ey * t + frame.norm.y * d
-  };
-}
-
-/* First we overwrite the first and last points of the dagre solution
- * with the original source and target positions according to cytoscape.js
+/* First introduce new control points to bridge between the dagre list of 
+ * points and the centres of cytoscape nodes.
  * Then we sanitize any empty or non-existing or degenerate control points
  * And finally we map the Dagre coordinates to the Cytoscape coordinated which
  * are relative to the original direction vector from source to target.
+ * These final coordinates are stored pairwise in two arrays cpw and cpd
+ * which are picked up by the Bezier construction code in cytoscape.
  */
-function dagreToCytoscape(dEdge, cyEdge) {
+function dagreEdgeToCytoscapeEdge(dEdge, cyEdge) {
   const from = cyEdge.source().position();
   const to = cyEdge.target().position();
-  const frame = buildFrame(from, to);
-  const points = createEndpoints(from, to, sanitize(dEdge.points));
+  const frame = buildEdgeFrame(from, to);
+  const points = addSmoothEndpoints(from, to, dEdge.points);
 
   var cpw = [];
   var cpd = [];
 
   points.forEach(p => {
-    const { w, d } = projectPoint(p, frame);
+    const { w, d } = toEdgeCoordinates(p, frame);
 
     cpw.push(w);
     cpd.push(d);
@@ -351,17 +314,16 @@ DagreLayout.prototype.run = function(){
     });
   });
 
-  if (true | options.useDagreCurves) {
-      // moving nodes around does not make sense with dagre edge layout
+  if (options.useDagreEdgeControlPoints) {
     addEdgePointStyle(cy, options);
-  
+ 
     g.edges().forEach(id => {
       const cyEdge = cy.getElementById(id.name);
       const dEdge = g.edge(id);
 
       if (dEdge && dEdge.points) {
         debugEdge(cy, id, cyEdge, dEdge);
-        cyEdge.data(dagreToCytoscape(dEdge, cyEdge));
+        cyEdge.data(dagreEdgeToCytoscapeEdge(dEdge, cyEdge));
       }
     });
   }
