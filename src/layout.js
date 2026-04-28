@@ -13,44 +13,20 @@ function DagreLayout( options ){
 // adds visible nodes for all the edge control points.
 function debugEdge(cy, id, cyEdge, e) {
   if (e.points && defaults.debugDagreCurves) {
-    cy.add({
-      data: {
-       id: `edgepoint_src_${id.name}`
-      },
-      classes: 'sourcepoint',
-      position: {
-        x: cyEdge.source().position().x,
-        y: cyEdge.source().position().y
-      }
+    e.points.forEach((p, i) => {
+      cy.add({
+        data: {
+          id: `edgepoint_${id.name}__d${i}`
+        },
+        classes: 'edgepoint',
+        position: {
+          x: p.x,
+          y: p.y
+        },
+        selectable: false,
+        grabbable: false
+      });
     });
-
-    cy.add({
-      data: {
-       id: `edgepoint_target_${id.name}`
-      },
-      classes: 'targetpoint',
-      position: {
-        x: cyEdge.target().position().x,
-        y: cyEdge.target().position().y
-      }
-    });
-
-    for (var p = 0; p < e.points.length - 1; p++) {
-      if (e.points[p]) {
-        cy.add({
-          data: {
-            id: `edgepoint_${id.name}__d${p}`
-          },
-          classes: 'edgepoint',
-          position: {
-            x: e.points[p].x,
-            y: e.points[p].y
-          },
-          selectable: false,
-          grabbable: false
-        });
-      }
-    }
   }
 }
 
@@ -97,24 +73,6 @@ function addEdgePointStyle(cy, options) {
         })
         .update();
       cy.style()
-        .selector('node.sourcepoint')
-        .style({
-          'background-color': '#ff0000',
-          'width': 8,
-          'height': 8,
-          'shape': 'triangle' 
-        })
-        .update();
-      cy.style()
-        .selector('node.targetpoint')
-        .style({
-          'background-color': '#00ff00',
-          'width': 8,
-          'height': 8,
-          'shape': 'square' 
-        })
-        .update();
-      cy.style()
         .selector('edge[cpd]')
         .style({
           'curve-style' : 'unbundled-bezier',
@@ -141,11 +99,28 @@ function projectPoint(P, frame) {
 }
 
 function direction(a, b) {
-  return norm({ x: b.x - a.x, y: b.y - a.y });
+  return norm({ x: noZero(b.x - a.x), y: noZero(b.y - a.y) });
 }
 
-function createEndpoints(src, tgt, points, k = 50) {
-  if (points.length === 0) return [];
+function length(a, b) {
+  return Math.hypot(b.x - a.x, b.y - a.y);
+}
+
+function computeK(src, tgt) {
+  const d = length(src, tgt);
+
+  // base tuning constants (you will tweak these once)
+  const minK = 39;
+  const maxK = 42;
+
+  // smooth scaling (sqrt prevents extreme growth)
+  const k = Math.sqrt(d) * 6;
+
+  return Math.max(minK, Math.min(maxK, k));
+}
+
+function createEndpoints(src, tgt, points, k = computeK(src, tgt)) {
+  if (!points || points.length === 0) return [];
 
   const first = points[0];
   const last = points[points.length - 1];
@@ -163,7 +138,11 @@ function createEndpoints(src, tgt, points, k = 50) {
     y: tgt.y - dirIn.y * k
   };
 
-  return [startCtrl, ...points, endCtrl];
+  return [
+    startCtrl,
+    ...points,
+    endCtrl,
+  ];
 }
 
 function sanitize(points) {
@@ -185,6 +164,13 @@ function sanitize(points) {
   }
 
   return out;
+}
+
+function unproject(t, d, src, frame) {
+  return {
+    x: src.x + frame.x * t + frame.norm.x * d,
+    y: src.y + frame.ey * t + frame.norm.y * d
+  };
 }
 
 /* First we overwrite the first and last points of the dagre solution

@@ -142,42 +142,20 @@ function DagreLayout(options) {
 // adds visible nodes for all the edge control points.
 function debugEdge(cy, id, cyEdge, e) {
   if (e.points && defaults.debugDagreCurves) {
-    cy.add({
-      data: {
-        id: "edgepoint_src_".concat(id.name)
-      },
-      classes: 'sourcepoint',
-      position: {
-        x: cyEdge.source().position().x,
-        y: cyEdge.source().position().y
-      }
+    e.points.forEach(function (p, i) {
+      cy.add({
+        data: {
+          id: "edgepoint_".concat(id.name, "__d").concat(i)
+        },
+        classes: 'edgepoint',
+        position: {
+          x: p.x,
+          y: p.y
+        },
+        selectable: false,
+        grabbable: false
+      });
     });
-    cy.add({
-      data: {
-        id: "edgepoint_target_".concat(id.name)
-      },
-      classes: 'targetpoint',
-      position: {
-        x: cyEdge.target().position().x,
-        y: cyEdge.target().position().y
-      }
-    });
-    for (var p = 0; p < e.points.length - 1; p++) {
-      if (e.points[p]) {
-        cy.add({
-          data: {
-            id: "edgepoint_".concat(id.name, "__d").concat(p)
-          },
-          classes: 'edgepoint',
-          position: {
-            x: e.points[p].x,
-            y: e.points[p].y
-          },
-          selectable: false,
-          grabbable: false
-        });
-      }
-    }
   }
 }
 function sub(a, b) {
@@ -235,18 +213,6 @@ function addEdgePointStyle(cy, options) {
       'height': 8,
       'shape': 'diamond'
     }).update();
-    cy.style().selector('node.sourcepoint').style({
-      'background-color': '#ff0000',
-      'width': 8,
-      'height': 8,
-      'shape': 'triangle'
-    }).update();
-    cy.style().selector('node.targetpoint').style({
-      'background-color': '#00ff00',
-      'width': 8,
-      'height': 8,
-      'shape': 'square'
-    }).update();
     cy.style().selector('edge[cpd]').style({
       'curve-style': 'unbundled-bezier',
       'control-point-weights': 'data(cpw)',
@@ -269,43 +235,29 @@ function projectPoint(P, frame) {
     d: d
   };
 }
-function stabilizePreEnd(prev, end) {
-  var beta = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0.5;
-  return {
-    x: prev.x * (1 - beta) + end.x * beta,
-    y: prev.y * (1 - beta) + end.y * beta
-  };
-}
-function interpolate(a, b) {
-  return {
-    x: (a.x + b.x) / 2,
-    y: (a.y + b.y) / 2
-  };
-}
-function add(a, b) {
-  return {
-    x: a.x + b.x,
-    y: a.y + b.y
-  };
-}
-function scale(v, s) {
-  return {
-    x: v.x * s,
-    y: v.y * s
-  };
-}
-function lerp(a, b, t) {
-  return add(a, scale(sub(b, a), t));
-}
 function direction(a, b) {
   return norm({
-    x: b.x - a.x,
-    y: b.y - a.y
+    x: noZero(b.x - a.x),
+    y: noZero(b.y - a.y)
   });
 }
+function length(a, b) {
+  return Math.hypot(b.x - a.x, b.y - a.y);
+}
+function computeK(src, tgt) {
+  var d = length(src, tgt);
+
+  // base tuning constants (you will tweak these once)
+  var minK = 39;
+  var maxK = 42;
+
+  // smooth scaling (sqrt prevents extreme growth)
+  var k = Math.sqrt(d) * 6;
+  return Math.max(minK, Math.min(maxK, k));
+}
 function createEndpoints(src, tgt, points) {
-  var k = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 40;
-  if (points.length === 0) return [];
+  var k = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : computeK(src, tgt);
+  if (!points || points.length === 0) return [];
   var first = points[0];
   var last = points[points.length - 1];
   var dirOut = direction(src, first);
@@ -334,6 +286,12 @@ function sanitize(points) {
     out.push(p);
   }
   return out;
+}
+function unproject(t, d, src, frame) {
+  return {
+    x: src.x + frame.x * t + frame.norm.x * d,
+    y: src.y + frame.ey * t + frame.norm.y * d
+  };
 }
 
 /* First we overwrite the first and last points of the dagre solution
