@@ -140,8 +140,8 @@ function DagreLayout(options) {
 }
 
 // adds visible nodes for all the edge control points.
-function debugEdge(cy, id, cyEdge, e) {
-  if (e.points && defaults.debugDagreEdgeControlPoints) {
+function debugEdge(cy, id, cyEdge, e, options) {
+  if (e.points && options.debugDagreEdgeControlPoints) {
     e.points.forEach(function (p, i) {
       cy.add({
         data: {
@@ -265,6 +265,14 @@ function addSmoothEndpoints(src, tgt, points) {
   };
   return [startCtrl].concat(_toConsumableArray(points), [endCtrl]);
 }
+function normalizeWeight(cpw) {
+  var min = Math.min.apply(Math, _toConsumableArray(cpw));
+  var max = Math.max.apply(Math, _toConsumableArray(cpw));
+  var range = max - min || 1;
+  return cpw.map(function (v) {
+    return (v - min) / range;
+  });
+}
 
 /* First introduce new control points to bridge between the dagre list of 
  * points and the centres of cytoscape nodes.
@@ -293,14 +301,6 @@ function dagreEdgeToCytoscapeEdge(dEdge, cyEdge) {
     cpw: cpw,
     cpd: cpd
   };
-}
-function normalizeWeight(cpw) {
-  var min = Math.min.apply(Math, _toConsumableArray(cpw));
-  var max = Math.max.apply(Math, _toConsumableArray(cpw));
-  var range = max - min || 1;
-  return cpw.map(function (v) {
-    return (v - min) / range;
-  });
 }
 
 // runs the layout
@@ -446,7 +446,7 @@ DagreLayout.prototype.run = function () {
       var cyEdge = cy.getElementById(id.name);
       var dEdge = g.edge(id);
       if (dEdge && dEdge.points) {
-        debugEdge(cy, id, cyEdge, dEdge);
+        debugEdge(cy, id, cyEdge, dEdge, options);
         cyEdge.data(dagreEdgeToCytoscapeEdge(dEdge, cyEdge));
       }
     });
@@ -498,7 +498,7 @@ var defaults = {
   useDagreEdgeControlPoints: false,
   // enable bezier curves using dagre control points
   debugDagreEdgeControlPoints: false,
-  // visualizes dagre's edge control points as nodes
+  // avisualizes dagre's edge control points as nodes
   animate: false,
   // whether to transition the node positions
   animateFilter: function animateFilter(node, i) {

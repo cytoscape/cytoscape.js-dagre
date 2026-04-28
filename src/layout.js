@@ -11,8 +11,8 @@ function DagreLayout( options ){
 }
 
 // adds visible nodes for all the edge control points.
-function debugEdge(cy, id, cyEdge, e) {
-  if (e.points && defaults.debugDagreEdgeControlPoints) {
+function debugEdge(cy, id, cyEdge, e, options) {
+  if (e.points && options.debugDagreEdgeControlPoints) {
     e.points.forEach((p, i) => {
       cy.add({
         data: {
@@ -322,7 +322,7 @@ DagreLayout.prototype.run = function(){
       const dEdge = g.edge(id);
 
       if (dEdge && dEdge.points) {
-        debugEdge(cy, id, cyEdge, dEdge);
+        debugEdge(cy, id, cyEdge, dEdge, options);
         cyEdge.data(dagreEdgeToCytoscapeEdge(dEdge, cyEdge));
       }
     });
