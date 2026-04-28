@@ -18,7 +18,7 @@ let defaults = {
   spacingFactor: undefined, // Applies a multiplicative factor (>0) to expand or compress the overall area that the nodes take up
   nodeDimensionsIncludeLabels: false, // whether labels should be included in determining the space used by a node
   useDagreEdgeControlPoints: false, // enable bezier curves using dagre control points
-  debugDagreEdgeControlPoints: true, // visualizes dagre's edge control points as nodes
+  debugDagreEdgeControlPoints: false, // visualizes dagre's edge control points as nodes
   animate: false, // whether to transition the node positions
   animateFilter: function( node, i ){ return true; }, // whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions
   animationDuration: 500, // duration of animation in ms if enabled

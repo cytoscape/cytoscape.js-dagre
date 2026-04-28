@@ -62,7 +62,7 @@ function buildEdgeFrame(src, tgt) {
 }
 
 function addEdgePointStyle(cy, options) {
-  if (options.debugDagreCurves) {
+  if (options.debugDagreEdgeControlPoints) {
     cy.style()
       .selector('node.edgepoint')
       .style({

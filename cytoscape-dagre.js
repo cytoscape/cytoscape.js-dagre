@@ -141,7 +141,7 @@ function DagreLayout(options) {
 
 // adds visible nodes for all the edge control points.
 function debugEdge(cy, id, cyEdge, e) {
-  if (e.points && defaults.debugDagreCurves) {
+  if (e.points && defaults.debugDagreEdgeControlPoints) {
     e.points.forEach(function (p, i) {
       cy.add({
         data: {
@@ -206,7 +206,7 @@ function buildEdgeFrame(src, tgt) {
   };
 }
 function addEdgePointStyle(cy, options) {
-  if (options.debugDagreCurves) {
+  if (options.debugDagreEdgeControlPoints) {
     cy.style().selector('node.edgepoint').style({
       'background-color': '#ff0000',
       'width': 8,
@@ -241,11 +241,6 @@ function direction(a, b) {
     y: noZero(b.y - a.y)
   });
 }
-function hasUnbundledBezier(cy) {
-  cy.style().json().some(function (rule) {
-    return rule.style && rule.style['curve-style'] === 'unbundled-bezier';
-  });
-}
 function addSmoothEndpoints(src, tgt, points) {
   var endpointTangentLength = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 25;
   if (!points || points.length === 0) return [];
@@ -276,6 +271,8 @@ function addSmoothEndpoints(src, tgt, points) {
  * Then we sanitize any empty or non-existing or degenerate control points
  * And finally we map the Dagre coordinates to the Cytoscape coordinated which
  * are relative to the original direction vector from source to target.
+ * These final coordinates are stored pairwise in two arrays cpw and cpd
+ * which are picked up by the Bezier construction code in cytoscape.
  */
 function dagreEdgeToCytoscapeEdge(dEdge, cyEdge) {
   var from = cyEdge.source().position();
@@ -443,19 +440,17 @@ DagreLayout.prototype.run = function () {
       y: dModel.y
     });
   });
-
-  // if (hasUnbundledBezier(cy)) {
-  addEdgePointStyle(cy, options);
-  g.edges().forEach(function (id) {
-    var cyEdge = cy.getElementById(id.name);
-    var dEdge = g.edge(id);
-    if (dEdge && dEdge.points) {
-      debugEdge(cy, id, cyEdge, dEdge);
-      cyEdge.data(dagreEdgeToCytoscapeEdge(dEdge, cyEdge));
-    }
-  });
-  // }
-
+  if (options.useDagreEdgeControlPoints) {
+    addEdgePointStyle(cy, options);
+    g.edges().forEach(function (id) {
+      var cyEdge = cy.getElementById(id.name);
+      var dEdge = g.edge(id);
+      if (dEdge && dEdge.points) {
+        debugEdge(cy, id, cyEdge, dEdge);
+        cyEdge.data(dagreEdgeToCytoscapeEdge(dEdge, cyEdge));
+      }
+    });
+  }
   return this; // chaining
 };
 module.exports = DagreLayout;
@@ -500,8 +495,10 @@ var defaults = {
   // Applies a multiplicative factor (>0) to expand or compress the overall area that the nodes take up
   nodeDimensionsIncludeLabels: false,
   // whether labels should be included in determining the space used by a node
-  debugDagreCurves: true,
-  // visualizes dagre's Bezier control points
+  useDagreEdgeControlPoints: false,
+  // enable bezier curves using dagre control points
+  debugDagreEdgeControlPoints: false,
+  // visualizes dagre's edge control points as nodes
   animate: false,
   // whether to transition the node positions
   animateFilter: function animateFilter(node, i) {
