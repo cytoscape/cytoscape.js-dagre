@@ -74,11 +74,15 @@ function addEdgePointStyle(cy, options) {
       .update();
   }
   cy.style()
-    .selector('edge[cpd]')
+    .selector('edge[controlPointDistances]')
     .style({
       'curve-style' : 'unbundled-bezier',
-      'control-point-weights': 'data(cpw)',
-      'control-point-distances': 'data(cpd)',
+      'control-point-weights': 'data(controlPointWeights)',
+      'control-point-distances': 'data(controlPointDistances)',
+      'edge-distances': 'endpoints',
+      'source-endpoint': 'data(sourcePoint)',
+      'target-endpoint': 'data(targetPoint)',
+      'edge-ends-overlap': 'false'
     }).update();
 }
 
@@ -91,55 +95,33 @@ function noZero(x) {
 }
 
 function toEdgeCoordinates(P, frame) {
-  const v = subtract(P, frame.src);
-  const w = noZero(product(v, frame.dir) / frame.len);
-  const d = noZero(product(v, frame.normal));
+  const vector = subtract(P, frame.src);
+  const weight = noZero(product(vector, frame.dir) / frame.len);
+  const distance = noZero(product(vector, frame.normal));
 
-  return { w, d };
+  return { weight, distance };
 }
 
-function direction(a, b) {
-  return norm({ x: noZero(b.x - a.x), y: noZero(b.y - a.y) });
-}
+function normalizeWeight(coords) {
+  let min = Infinity;
+  let max = -Infinity;
 
-function addSmoothEndpoints(src, tgt, points, endpointTangentLength = 25) {
-  if (!points || points.length === 0) return [];
+  for (const p of coords) {
+    if (p.weight < min) {
+      min = p.weight;
+    }
 
-  const first = points[0];
-  const last = points[points.length - 1];
+    if (p.weight > max) {
+      max = p.weight;
+    }
+  }
 
-  // here is where we "force" dagre's control points to play
-  // nice with the usage of bezier curve by cytoscape. 
-  // we introduce a control point between dagres first
-  // and the source position of the node, and also the 
-  // same for the last control point and the target node position. 
-  
-  const dirOut = direction(src, first);
-  const dirIn  = direction(last, tgt);
-
-  const startCtrl = {
-    x: src.x + dirOut.x * endpointTangentLength,
-    y: src.y + dirOut.y * endpointTangentLength
-  };
-
-  const endCtrl = {
-    x: tgt.x - dirIn.x * endpointTangentLength,
-    y: tgt.y - dirIn.y * endpointTangentLength
-  };
-
-  return [
-    startCtrl,
-    ...points,
-    endCtrl,
-  ];
-}
-
-function normalizeWeight(cpw) {
-  const min = Math.min(...cpw);
-  const max = Math.max(...cpw);
   const range = max - min || 1;
 
-  return cpw.map(v => (v - min) / range);
+  return coords.map(p => ({
+    distance: p.distance,
+    weight: (p.weight - min) / range
+  }));
 }
 
 /* First introduce new control points to bridge between the dagre list of 
@@ -150,25 +132,28 @@ function normalizeWeight(cpw) {
  * These final coordinates are stored pairwise in two arrays cpw and cpd
  * which are picked up by the Bezier construction code in cytoscape.
  */
-function dagreEdgeToCytoscapeEdge(dEdge, cyEdge) {
-  const from = cyEdge.source().position();
-  const to = cyEdge.target().position();
-  const frame = buildEdgeFrame(from, to);
-  const points = addSmoothEndpoints(from, to, dEdge.points);
+function dagreEdgeToCytoscapeEdge(dEdge, cEdge) {
+  const fromNode = cEdge.source().position();
+  const toNode = cEdge.target().position();
+  const frame = buildEdgeFrame(fromNode, toNode);
+  const coords = normalizeWeight(dEdge.points.map(p => toEdgeCoordinates(p, frame)));
+  console.log(coords);
+  const first = coords.at(0);
+  const last = coords.at(-1);
+  console.log('first', first);
+  console.log('last', last);
+  
+  const controlPointWeights = coords.slice(1,-1).map(c => c.weight);
+  const controlPointDistances = coords.slice(1,-1).map(c => c.distance);
 
-  var cpw = [];
-  var cpd = [];
+  const sp = subtract(dEdge.points.at(0), fromNode);
+  const sourcePoint = `${sp.x}px ${sp.y}px`;
+  const tp = subtract(dEdge.points.at(-1), toNode);
+  const targetPoint = `${tp.x}px ${tp.y}px`;
 
-  points.forEach(p => {
-    const { w, d } = toEdgeCoordinates(p, frame);
-
-    cpw.push(w);
-    cpd.push(d);
-  });
-
-  cpw = normalizeWeight(cpw);
-
-  return { cpw, cpd };
+  const result = { controlPointWeights, controlPointDistances, sourcePoint, targetPoint };
+  console.log(result);
+  return result;
 }
 
 // runs the layout

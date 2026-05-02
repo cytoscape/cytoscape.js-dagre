@@ -7,7 +7,7 @@
 
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
 
-    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.umd.js"></script>
 
     <!-- for testing with local version of cytoscape.js -->
     <!--<script src="../cytoscape.js/build/cytoscape.js"></script>-->
@@ -55,6 +55,8 @@
             {
               selector: 'node',
               style: {
+                'width' : '100',
+                // 'shape' : 'circle',
                 'background-color': '#11479e',
                 'background-opacity': '0.5'
               }

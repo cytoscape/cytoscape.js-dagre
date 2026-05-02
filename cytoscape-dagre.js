@@ -119,11 +119,8 @@ module.exports = register;
 /***/ (function(module, exports, __webpack_require__) {
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
-function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) { n[e] = r[e]; } return n; }
 var isFunction = function isFunction(o) {
   return typeof o === 'function';
@@ -214,10 +211,14 @@ function addEdgePointStyle(cy, options) {
       'shape': 'diamond'
     }).update();
   }
-  cy.style().selector('edge[cpd]').style({
+  cy.style().selector('edge[controlPointDistances]').style({
     'curve-style': 'unbundled-bezier',
-    'control-point-weights': 'data(cpw)',
-    'control-point-distances': 'data(cpd)'
+    'control-point-weights': 'data(controlPointWeights)',
+    'control-point-distances': 'data(controlPointDistances)',
+    'edge-distances': 'endpoints',
+    'source-endpoint': 'data(sourcePoint)',
+    'target-endpoint': 'data(targetPoint)',
+    'edge-ends-overlap': 'false'
   }).update();
 }
 function noZero(x) {
@@ -227,50 +228,40 @@ function noZero(x) {
   return x;
 }
 function toEdgeCoordinates(P, frame) {
-  var v = subtract(P, frame.src);
-  var w = noZero(product(v, frame.dir) / frame.len);
-  var d = noZero(product(v, frame.normal));
+  var vector = subtract(P, frame.src);
+  var weight = noZero(product(vector, frame.dir) / frame.len);
+  var distance = noZero(product(vector, frame.normal));
   return {
-    w: w,
-    d: d
+    weight: weight,
+    distance: distance
   };
 }
-function direction(a, b) {
-  return norm({
-    x: noZero(b.x - a.x),
-    y: noZero(b.y - a.y)
-  });
-}
-function addSmoothEndpoints(src, tgt, points) {
-  var endpointTangentLength = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 25;
-  if (!points || points.length === 0) return [];
-  var first = points[0];
-  var last = points[points.length - 1];
-
-  // here is where we "force" dagre's control points to play
-  // nice with the usage of bezier curve by cytoscape. 
-  // we introduce a control point between dagres first
-  // and the source position of the node, and also the 
-  // same for the last control point and the target node position. 
-
-  var dirOut = direction(src, first);
-  var dirIn = direction(last, tgt);
-  var startCtrl = {
-    x: src.x + dirOut.x * endpointTangentLength,
-    y: src.y + dirOut.y * endpointTangentLength
-  };
-  var endCtrl = {
-    x: tgt.x - dirIn.x * endpointTangentLength,
-    y: tgt.y - dirIn.y * endpointTangentLength
-  };
-  return [startCtrl].concat(_toConsumableArray(points), [endCtrl]);
-}
-function normalizeWeight(cpw) {
-  var min = Math.min.apply(Math, _toConsumableArray(cpw));
-  var max = Math.max.apply(Math, _toConsumableArray(cpw));
+function normalizeWeight(coords) {
+  var min = Infinity;
+  var max = -Infinity;
+  var _iterator = _createForOfIteratorHelper(coords),
+    _step;
+  try {
+    for (_iterator.s(); !(_step = _iterator.n()).done;) {
+      var p = _step.value;
+      if (p.weight < min) {
+        min = p.weight;
+      }
+      if (p.weight > max) {
+        max = p.weight;
+      }
+    }
+  } catch (err) {
+    _iterator.e(err);
+  } finally {
+    _iterator.f();
+  }
   var range = max - min || 1;
-  return cpw.map(function (v) {
-    return (v - min) / range;
+  return coords.map(function (p) {
+    return {
+      distance: p.distance,
+      weight: (p.weight - min) / range
+    };
   });
 }
 
@@ -282,25 +273,34 @@ function normalizeWeight(cpw) {
  * These final coordinates are stored pairwise in two arrays cpw and cpd
  * which are picked up by the Bezier construction code in cytoscape.
  */
-function dagreEdgeToCytoscapeEdge(dEdge, cyEdge) {
-  var from = cyEdge.source().position();
-  var to = cyEdge.target().position();
-  var frame = buildEdgeFrame(from, to);
-  var points = addSmoothEndpoints(from, to, dEdge.points);
-  var cpw = [];
-  var cpd = [];
-  points.forEach(function (p) {
-    var _toEdgeCoordinates = toEdgeCoordinates(p, frame),
-      w = _toEdgeCoordinates.w,
-      d = _toEdgeCoordinates.d;
-    cpw.push(w);
-    cpd.push(d);
+function dagreEdgeToCytoscapeEdge(dEdge, cEdge) {
+  var fromNode = cEdge.source().position();
+  var toNode = cEdge.target().position();
+  var frame = buildEdgeFrame(fromNode, toNode);
+  var coords = normalizeWeight(dEdge.points.map(function (p) {
+    return toEdgeCoordinates(p, frame);
+  }));
+  console.log(coords);
+  var first = coords.at(0);
+  var last = coords.at(-1);
+  console.log('first', first);
+  console.log('last', last);
+  var controlPointWeights = coords.slice(1, -1).map(function (c) {
+    return c.weight;
   });
-  cpw = normalizeWeight(cpw);
-  return {
-    cpw: cpw,
-    cpd: cpd
+  var controlPointDistances = coords.slice(1, -1).map(function (c) {
+    return c.distance;
+  });
+  var sourcePoint = "".concat(first.distance, "px ").concat(first.weight, "px");
+  var targetPoint = "".concat(last.distance, "px ").concat(last.weight, "px");
+  var result = {
+    controlPointWeights: controlPointWeights,
+    controlPointDistances: controlPointDistances,
+    sourcePoint: sourcePoint,
+    targetPoint: targetPoint
   };
+  console.log(result);
+  return result;
 }
 
 // runs the layout

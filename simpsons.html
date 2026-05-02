@@ -7,7 +7,7 @@
 
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
 
-    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.umd.js"></script>
 
     <!-- for testing with local version of cytoscape.js -->
     <!--<script src="../cytoscape.js/build/cytoscape.js"></script>-->
@@ -47,14 +47,15 @@
                 "name": "dagre",
                 "useDagreEdgeControlPoints": true,
                 "spacingFactor": 1,
+                "rankSep" :200,
                 "ranker": "network-simplex",
-                "debugDagreEdgeControlPoints": true
+                "debugDagreEdgeControlPoints": false
             },
             "style": [
                 {   
                     "selector": "node",
                     "style": {
-                        "shape": "round-rectangle",
+                        "shape": "rounded-rectangle",
                         "color": "white",
                         "background-color": "blue",
                         "width": "label",
@@ -72,11 +73,10 @@
                     "selector": "edge",
                     "style": {
                         "target-arrow-shape": "triangle",
-                        "width": 3,
+                        "width": 10,
                         "line-color": "black",
                         "source-arrow-color": "black",
                         "curve-style": "unbundled-bezier",
-                        "label": "data(label)",
                         "line-style": "solid",
                         "target-arrow-color": "black",
                         "color": "red",
