@@ -79,9 +79,7 @@ function addEdgePointStyle(cy, options) {
       'curve-style' : 'unbundled-bezier',
       'control-point-weights': 'data(controlPointWeights)',
       'control-point-distances': 'data(controlPointDistances)',
-      'edge-distances': 'endpoints',
-      'source-endpoint': 'data(sourcePoint)',
-      'target-endpoint': 'data(targetPoint)',
+      'edge-distances': 'intersection',
       'edge-ends-overlap': 'false'
     }).update();
 }
@@ -213,6 +211,7 @@ DagreLayout.prototype.run = function(){
     g.setNode( node.id(), {
       width: nbb.w,
       height: nbb.h,
+      shape: 'ellipse',
       name: node.id()
     } );
   }
