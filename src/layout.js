@@ -135,11 +135,6 @@ function dagreEdgeToCytoscapeEdge(dEdge, cEdge) {
   const toNode = cEdge.target().position();
   const frame = buildEdgeFrame(fromNode, toNode);
   const coords = normalizeWeight(dEdge.points.map(p => toEdgeCoordinates(p, frame)));
-  console.log(coords);
-  const first = coords.at(0);
-  const last = coords.at(-1);
-  console.log('first', first);
-  console.log('last', last);
   
   const controlPointWeights = coords.slice(1,-1).map(c => c.weight);
   const controlPointDistances = coords.slice(1,-1).map(c => c.distance);
@@ -150,7 +145,7 @@ function dagreEdgeToCytoscapeEdge(dEdge, cEdge) {
   const targetPoint = `${tp.x}px ${tp.y}px`;
 
   const result = { controlPointWeights, controlPointDistances, sourcePoint, targetPoint };
-  console.log(result);
+
   return result;
 }
 
