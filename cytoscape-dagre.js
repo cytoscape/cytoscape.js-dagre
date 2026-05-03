@@ -137,7 +137,7 @@ function DagreLayout(options) {
 }
 
 // adds visible nodes for all the edge control points.
-function debugEdge(cy, id, cyEdge, e, options) {
+function debugEdge(cy, id, e, options) {
   if (e.points && options.debugDagreEdgeControlPoints) {
     e.points.forEach(function (p, i) {
       cy.add({
@@ -215,9 +215,7 @@ function addEdgePointStyle(cy, options) {
     'curve-style': 'unbundled-bezier',
     'control-point-weights': 'data(controlPointWeights)',
     'control-point-distances': 'data(controlPointDistances)',
-    'edge-distances': 'endpoints',
-    'source-endpoint': 'data(sourcePoint)',
-    'target-endpoint': 'data(targetPoint)',
+    'edge-distances': 'intersection',
     'edge-ends-overlap': 'false'
   }).update();
 }
@@ -291,8 +289,10 @@ function dagreEdgeToCytoscapeEdge(dEdge, cEdge) {
   var controlPointDistances = coords.slice(1, -1).map(function (c) {
     return c.distance;
   });
-  var sourcePoint = "".concat(first.distance, "px ").concat(first.weight, "px");
-  var targetPoint = "".concat(last.distance, "px ").concat(last.weight, "px");
+  var sp = subtract(dEdge.points.at(0), fromNode);
+  var sourcePoint = "".concat(sp.x, "px ").concat(sp.y, "px");
+  var tp = subtract(dEdge.points.at(-1), toNode);
+  var targetPoint = "".concat(tp.x, "px ").concat(tp.y, "px");
   var result = {
     controlPointWeights: controlPointWeights,
     controlPointDistances: controlPointDistances,
@@ -366,6 +366,7 @@ DagreLayout.prototype.run = function () {
     g.setNode(node.id(), {
       width: nbb.w,
       height: nbb.h,
+      shape: 'ellipse',
       name: node.id()
     });
   }
@@ -446,7 +447,7 @@ DagreLayout.prototype.run = function () {
       var cyEdge = cy.getElementById(id.name);
       var dEdge = g.edge(id);
       if (dEdge && dEdge.points) {
-        debugEdge(cy, id, cyEdge, dEdge, options);
+        debugEdge(cy, id, dEdge, options);
         cyEdge.data(dagreEdgeToCytoscapeEdge(dEdge, cyEdge));
       }
     });
@@ -498,7 +499,7 @@ var defaults = {
   useDagreEdgeControlPoints: false,
   // enable bezier curves using dagre control points
   debugDagreEdgeControlPoints: false,
-  // avisualizes dagre's edge control points as nodes
+  // visualizes dagre's edge control points as nodes
   animate: false,
   // whether to transition the node positions
   animateFilter: function animateFilter(node, i) {

@@ -31,11 +31,11 @@ function debugEdge(cy, id, e, options) {
 }
 
 function subtract(a, b) {
-  return { x: a.x - b.x, y: a.y - b.y };
+  return { x: noZero(a.x - b.x), y: noZero(a.y - b.y) };
 }
 
 function product(a, b) {
-  return a.x * b.x + a.y * b.y;
+  return noZero(a.x * b.x) + noZero(a.y * b.y);
 }
 
 function norm(v) {
