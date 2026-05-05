@@ -157,12 +157,12 @@ function debugEdge(cy, id, e, options) {
 }
 function subtract(a, b) {
   return {
-    x: a.x - b.x,
-    y: a.y - b.y
+    x: noZero(a.x - b.x),
+    y: noZero(a.y - b.y)
   };
 }
 function product(a, b) {
-  return a.x * b.x + a.y * b.y;
+  return noZero(a.x * b.x) + noZero(a.y * b.y);
 }
 function norm(v) {
   var len = Math.hypot(v.x, v.y) || 1;
@@ -278,11 +278,6 @@ function dagreEdgeToCytoscapeEdge(dEdge, cEdge) {
   var coords = normalizeWeight(dEdge.points.map(function (p) {
     return toEdgeCoordinates(p, frame);
   }));
-  console.log(coords);
-  var first = coords.at(0);
-  var last = coords.at(-1);
-  console.log('first', first);
-  console.log('last', last);
   var controlPointWeights = coords.slice(1, -1).map(function (c) {
     return c.weight;
   });
@@ -299,7 +294,6 @@ function dagreEdgeToCytoscapeEdge(dEdge, cEdge) {
     sourcePoint: sourcePoint,
     targetPoint: targetPoint
   };
-  console.log(result);
   return result;
 }
 
