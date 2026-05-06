@@ -61,6 +61,10 @@
             'round-tag'
         ];
 
+        function randomShape() {
+            return cytoscapeNodeShapes[Math.floor(Math.random() * cytoscapeNodeShapes.length)];
+        }
+
         var cy = window.cy = cytoscape({
             container: document.getElementById('cy'),
 
@@ -71,7 +75,7 @@
                 "spacingFactor": 1,
                 "rankSep" :200,
                 "ranker": "network-simplex",
-                "debugDagreEdgeControlPoints": false
+                "debugDagreEdgeControlPoints": true
             },
             "style": [
                 {   
@@ -115,77 +119,77 @@
                     "data": {
                         "id": "Lisa Simpson",
                         "label": "Lisa Simpson",
-                        "shape" : cytoscapeNodeShapes[Math.floor(Math.random() * cytoscapeNodeShapes.length)]
+                        "shape" : randomShape()
                     }
                 },
                 {
                     "data": {
                         "id": "Maggie Simpson",
                         "label": "Maggie Simpson",
-                        "shape" : cytoscapeNodeShapes[Math.floor(Math.random() * cytoscapeNodeShapes.length)]
+                        "shape" : randomShape()
                     }
                 },
                 {
                     "data": {
                         "id": "Homer Simpson",
                         "label": "Homer Simpson",
-                        "shape" : cytoscapeNodeShapes[Math.floor(Math.random() * cytoscapeNodeShapes.length)]
+                        "shape" : randomShape()
                     }
                 },
                 {
                     "data": {
                         "id": "Patty Bouvier",
                         "label": "Patty Bouvier",
-                        "shape" : cytoscapeNodeShapes[Math.floor(Math.random() * cytoscapeNodeShapes.length)]
+                        "shape" : randomShape()
                     }
                 },
                 {
                     "data": {
                         "id": "Marge Simpson",
                         "label": "Marge Simpson",
-                        "shape" : cytoscapeNodeShapes[Math.floor(Math.random() * cytoscapeNodeShapes.length)]
+                        "shape" : randomShape()
                     }
                 },
                 {
                     "data": {
                         "id": "Selma Bouvier",
                         "label": "Selma Bouvier",
-                        "shape" : cytoscapeNodeShapes[Math.floor(Math.random() * cytoscapeNodeShapes.length)]
+                        "shape" : randomShape()
                     }
                 },
                 {
                     "data": {
                         "id": "Abraham Simpson",
                         "label": "Abraham Simpson",
-                        "shape" : cytoscapeNodeShapes[Math.floor(Math.random() * cytoscapeNodeShapes.length)]
+                        "shape" : randomShape()
                     }
                 },
                 {
                     "data": {
                         "id": "Mona Simpson",
                         "label": "Mona Simpson",
-                        "shape" : cytoscapeNodeShapes[Math.floor(Math.random() * cytoscapeNodeShapes.length)]
+                        "shape" : randomShape()
                     }
                 },
                 {
                     "data": {
                         "id": "Rod Flanders",
                         "label": "Rod Flanders",
-                        "shape" : cytoscapeNodeShapes[Math.floor(Math.random() * cytoscapeNodeShapes.length)]
+                        "shape" : randomShape()
                     }
                 },
                 {
                     "data": {
                         "id": "Bart Simpson",
                         "label": "Bart Simpson",
-                        "shape" : cytoscapeNodeShapes[Math.floor(Math.random() * cytoscapeNodeShapes.length)]
+                        "shape" : randomShape()
                     }
                 },
                 {
                     "data": {
                         "id": "Todd Flanders",
                         "label": "Todd Flanders",
-                        "shape" : cytoscapeNodeShapes[Math.floor(Math.random() * cytoscapeNodeShapes.length)]
+                        "shape" : randomShape()
                     }
                 }
             ],

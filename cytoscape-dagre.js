@@ -436,6 +436,10 @@ DagreLayout.prototype.run = function () {
     });
   });
   if (options.useDagreEdgeControlPoints) {
+    if (options.debugDagreEdgeControlPoints) {
+      // cleanup previously added points
+      cy.elements('.edgepoint').remove();
+    }
     addEdgePointStyle(cy, options);
     g.edges().forEach(function (id) {
       var cyEdge = cy.getElementById(id.name);
