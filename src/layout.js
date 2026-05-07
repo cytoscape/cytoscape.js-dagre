@@ -259,7 +259,7 @@ DagreLayout.prototype.run = function(){
   return this; // chaining
 };
 
-export function addDagreEdgeStyle(cy) {
+export function addDagreEdgeClass(cy) {
   cy.edges().addClass('useDagreEdgeControlPoints');
 }
 
