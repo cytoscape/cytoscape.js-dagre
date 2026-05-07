@@ -43,11 +43,11 @@ function buildEdgeFrame(src, tgt) {
 
 function addEdgePointStyle(cy) {
   cy.style()
-    .selector('edge[controlPointDistances]')
+    .selector('edge')
     .style({
       'curve-style' : 'unbundled-bezier',
-      'control-point-weights': 'data(controlPointWeights)',
-      'control-point-distances': 'data(controlPointDistances)',
+      'control-point-weights': ele => ele.scratch('controlPointWeights'),
+      'control-point-distances': ele => ele.scratch('controlPointDistances'),
       'edge-distances': 'intersection',
       'edge-ends-overlap': 'false'
     }).update();
@@ -270,7 +270,7 @@ DagreLayout.prototype.run = function(){
       const dEdge = g.edge(id);
 
       if (dEdge && dEdge.points) {
-        cyEdge.data(dagreEdgeToCytoscapeEdge(dEdge, cyEdge));
+        cyEdge.scratch(dagreEdgeToCytoscapeEdge(dEdge, cyEdge));
       }
     });
   }
