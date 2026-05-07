@@ -260,15 +260,9 @@ function dagreEdgeToCytoscapeEdge(dEdge, cEdge) {
   var controlPointDistances = coords.slice(1, -1).map(function (c) {
     return c.distance;
   });
-  var sp = subtract(dEdge.points.at(0), fromNode);
-  var sourcePoint = "".concat(sp.x, "px ").concat(sp.y, "px");
-  var tp = subtract(dEdge.points.at(-1), toNode);
-  var targetPoint = "".concat(tp.x, "px ").concat(tp.y, "px");
   var result = {
     controlPointWeights: controlPointWeights,
-    controlPointDistances: controlPointDistances,
-    sourcePoint: sourcePoint,
-    targetPoint: targetPoint
+    controlPointDistances: controlPointDistances
   };
   return result;
 }
