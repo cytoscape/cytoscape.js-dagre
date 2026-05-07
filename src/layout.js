@@ -41,18 +41,6 @@ function buildEdgeFrame(src, tgt) {
   return { src, tgt, dir, normal, len };
 }
 
-function addEdgePointStyle(cy) {
-  cy.style()
-    .selector('edge')
-    .style({
-      'curve-style' : 'unbundled-bezier',
-      'control-point-weights': ele => ele.scratch('controlPointWeights'),
-      'control-point-distances': ele => ele.scratch('controlPointDistances'),
-      'edge-distances': 'intersection',
-      'edge-ends-overlap': 'false'
-    }).update();
-}
-
 function noZero(x) {
   if (Math.abs(x) < EPSILON) {
     return x < 0 ? -EPSILON : EPSILON;
@@ -258,8 +246,18 @@ DagreLayout.prototype.run = function(){
   });
 
   if (options.useDagreEdgeControlPoints) {
-    addEdgePointStyle(cy);
- 
+    cy.edges().addClass('useDagreEdgeControlPoints');
+
+    cy.style()
+      .selector('edge.useDagreEdgeControlPoints')
+      .style({
+        'curve-style': 'unbundled-bezier',
+        'control-point-weights': ele => ele.scratch('controlPointWeights'),
+        'control-point-distances': ele => ele.scratch('controlPointDistances'),
+        'edge-distances': 'intersection',
+        'edge-ends-overlap': false
+    }).update();
+
     g.edges().forEach(id => {
       const cyEdge = cy.getElementById(id.name);
       const dEdge = g.edge(id);
@@ -268,6 +266,9 @@ DagreLayout.prototype.run = function(){
         cyEdge.scratch(dagreEdgeToCytoscapeEdge(dEdge, cyEdge));
       }
     });
+  }
+  else {
+    cy.edges().removeClass('useDagreEdgeControlPoints');
   }
 
   return this; // chaining
