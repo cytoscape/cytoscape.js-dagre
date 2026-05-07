@@ -246,18 +246,6 @@ DagreLayout.prototype.run = function(){
   });
 
   if (options.useDagreEdgeControlPoints) {
-    cy.edges().addClass('useDagreEdgeControlPoints');
-
-    cy.style()
-      .selector('edge.useDagreEdgeControlPoints')
-      .style({
-        'curve-style': 'unbundled-bezier',
-        'control-point-weights': ele => ele.scratch('controlPointWeights'),
-        'control-point-distances': ele => ele.scratch('controlPointDistances'),
-        'edge-distances': 'intersection',
-        'edge-ends-overlap': false
-    }).update();
-
     g.edges().forEach(id => {
       const cyEdge = cy.getElementById(id.name);
       const dEdge = g.edge(id);
@@ -267,11 +255,28 @@ DagreLayout.prototype.run = function(){
       }
     });
   }
-  else {
-    cy.edges().removeClass('useDagreEdgeControlPoints');
-  }
-
+  
   return this; // chaining
 };
+
+export function addDagreEdgeStyle(cy) {
+  cy.edges().addClass('useDagreEdgeControlPoints');
+}
+
+export function removeDagreEdgeClass(cy) {
+  cy.edges().removeClass('useDagreEdgeControlPoints');
+}
+
+export function registerDagreEdgeStyle(cy) {
+  cy.style()
+      .selector('edge.useDagreEdgeControlPoints')
+      .style({
+        'curve-style': 'unbundled-bezier',
+        'control-point-weights': ele => ele.scratch('controlPointWeights'),
+        'control-point-distances': ele => ele.scratch('controlPointDistances'),
+        'edge-distances': 'intersection',
+        'edge-ends-overlap': false
+    }).update();
+}
 
 module.exports = DagreLayout;
