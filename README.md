@@ -89,10 +89,26 @@ var defaults = {
                    // this feature is most useful when adding and removing the same nodes and edges multiple times in a graph.
   stop: function(){} // on layoutstop
   useDagreEdgeControlPoints: false, // enable bezier curves using dagre control points
-  debugDagreEdgeControlPoints: false, // visualizes dagre's edge control points as nodes
 };
 ```
 
+When `useDagreEdgeControlPoints` is `true` the layout algoritm maps Dagre's edge control points to Cytoscape edge coordinates. To see the effect you must add this class to every edge: `useDagreEdgeControlPoints`. For convenience there is `addDagreEdgeClass(cy)` and `removeDagreEdgeClass(cy)`.
+
+Next the style must be defined exactly as follows: 
+```javascript
+cy.style()  .selector('edge.useDagreEdgeControlPoints')
+      .style({
+        'curve-style': 'unbundled-bezier',
+        'control-point-weights': ele => ele.scratch('controlPointWeights'),
+        'control-point-distances': ele => ele.scratch('controlPointDistances'),
+        'edge-distances': 'intersection',
+        'edge-ends-overlap': false
+    }).update();
+```
+
+Caveat: any deviation for these style fields will lead to unexpected visual effects (like extra loops or missing edges and runtime errors).
+
+There is a convenience function that does exactly the above; `registerDagreEdgeStyle(cy)`
 
 ## Build targets
 
