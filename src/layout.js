@@ -10,26 +10,6 @@ function DagreLayout( options ){
   this.options = assign( {}, defaults, options );
 }
 
-// adds visible nodes for all the edge control points.
-function debugEdge(cy, id, e, options) {
-  if (e.points && options.debugDagreEdgeControlPoints) {
-    e.points.forEach((p, i) => {
-      cy.add({
-        data: {
-          id: `edgepoint_${id.name}__d${i}`
-        },
-        classes: 'edgepoint',
-        position: {
-          x: p.x,
-          y: p.y
-        },
-        selectable: false,
-        grabbable: false
-      });
-    });
-  }
-}
-
 function subtract(a, b) {
   return { x: noZero(a.x - b.x), y: noZero(a.y - b.y) };
 }
@@ -61,18 +41,7 @@ function buildEdgeFrame(src, tgt) {
   return { src, tgt, dir, normal, len };
 }
 
-function addEdgePointStyle(cy, options) {
-  if (options.debugDagreEdgeControlPoints) {
-    cy.style()
-      .selector('node.edgepoint')
-      .style({
-        'background-color': '#ff0000',
-        'width': 8,
-        'height': 8,
-        'shape': 'diamond' 
-      })
-      .update();
-  }
+function addEdgePointStyle(cy) {
   cy.style()
     .selector('edge[controlPointDistances]')
     .style({
@@ -294,19 +263,13 @@ DagreLayout.prototype.run = function(){
   });
 
   if (options.useDagreEdgeControlPoints) {
-    if (options.debugDagreEdgeControlPoints) {
-      // cleanup previously added points
-      cy.elements('.edgepoint').remove();
-    }
-
-    addEdgePointStyle(cy, options);
+    addEdgePointStyle(cy);
  
     g.edges().forEach(id => {
       const cyEdge = cy.getElementById(id.name);
       const dEdge = g.edge(id);
 
       if (dEdge && dEdge.points) {
-        debugEdge(cy, id, dEdge, options);
         cyEdge.data(dagreEdgeToCytoscapeEdge(dEdge, cyEdge));
       }
     });
