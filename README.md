@@ -88,27 +88,33 @@ var defaults = {
                    // defining the topology of a graph, this sort function can help ensure the correct order of the nodes/edges.
                    // this feature is most useful when adding and removing the same nodes and edges multiple times in a graph.
   stop: function(){} // on layoutstop
-  useDagreEdgeControlPoints: false, // enable bezier curves using dagre control points
+  /**
+   * Enable bezier curves using dagre's control points
+   */
+  useDagreEdgeControlPoints: false, 
+  /**
+   * Automatically adds edge class '.useDagreEdgeControlPoints' to all edges and configure it with this.dagreEdgeStyle.
+   * If set to `false` and `useDagreEdgeControlPoints` is `true` then apply `this.dagreEdgeStyle` yourself.
+   */
+  automaticDagreEdgeStyle: this.useDagreEdgeControlPoints,
+  /**
+   * Defines the style for rendering dagre edge control points stored by the layout algorithm
+   * if `useDagreEdgeControlPoints` is `true` and `automaticDagreEdgeStyle` is `true`
+   */
+  dagreEdgeStyle: {
+    'curve-style'             : 'unbundled-bezier',
+    'control-point-weights'   : ele => ele.scratch('controlPointWeights'),
+    'control-point-distances' : ele => ele.scratch('controlPointDistances'),
+    'edge-distances'          : 'intersection',
+    'edge-ends-overlap'       : false
+  }
 };
 ```
 
-When `useDagreEdgeControlPoints` is `true` the layout algoritm maps Dagre's edge control points to Cytoscape edge coordinates. To see the effect you must add this class to every edge: `useDagreEdgeControlPoints`. For convenience there is `addDagreEdgeClass(cy)` and `removeDagreEdgeClass(cy)`.
-
-Next the style must be defined exactly as follows: 
-```javascript
-cy.style()  .selector('edge.useDagreEdgeControlPoints')
-      .style({
-        'curve-style': 'unbundled-bezier',
-        'control-point-weights': ele => ele.scratch('controlPointWeights'),
-        'control-point-distances': ele => ele.scratch('controlPointDistances'),
-        'edge-distances': 'intersection',
-        'edge-ends-overlap': false
-    }).update();
-```
-
-Caveat: any deviation for these style fields will lead to unexpected visual effects (like extra loops or missing edges and runtime errors).
-
-There is a convenience function that does exactly the above; `registerDagreEdgeStyle(cy)`
+When `useDagreEdgeControlPoints` is `true` the layout algoritm maps Dagre's edge control points to Cytoscape edge coordinates. The `dagreEdgeStyle` default
+shows how to configure each edge to make use of the control points. If `automaticDagreEdgeStyle` is set to true, the layout will add a style (`.useDagreEdgeControlPoints`)
+to all edges and register the exact style given by `dagreEdgeStyle` for this class of edges. You can always role your own style instead, as long as you 
+copy the fields of `dagreEdgeStyle` exactly.
 
 ## Build targets
 
