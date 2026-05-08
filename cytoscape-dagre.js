@@ -182,26 +182,6 @@ function buildEdgeFrame(src, tgt) {
     len: len
   };
 }
-function addOrRemoveEdgePointStyle(cy) {
-  var options = cy.options();
-  cy.style().selector('edge').style({
-    'curve-style': function curveStyle(ele) {
-      return options.useDagreEdgeControlPoints ? 'unbundled-bezier' : '';
-    },
-    'control-point-weights': function controlPointWeights(ele) {
-      return options.useDagreEdgeControlPoints ? ele.scratch('controlPointWeights') : [];
-    },
-    'control-point-distances': function controlPointDistances(ele) {
-      return options.useDagreEdgeControlPoints ? ele.scratch('controlPointDistances') : [];
-    },
-    'edge-distances': function edgeDistances(_ele) {
-      return options.useDagreEdgeControlPoints ? 'intersection' : '';
-    },
-    'edge-ends-overlap': function edgeEndsOverlap(_ele) {
-      return options.useDagreEdgeControlPoints ? 'false' : '';
-    }
-  }).update();
-}
 function noZero(x) {
   if (Math.abs(x) < EPSILON) {
     return x < 0 ? -EPSILON : EPSILON;
@@ -412,8 +392,19 @@ DagreLayout.prototype.run = function () {
       y: dModel.y
     });
   });
-  addOrRemoveEdgePointStyle(cy);
   if (options.useDagreEdgeControlPoints) {
+    cy.edges().addClass('useDagreEdgeControlPoints');
+    cy.style().selector('edge.useDagreEdgeControlPoints').style({
+      'curve-style': 'unbundled-bezier',
+      'control-point-weights': function controlPointWeights(ele) {
+        return ele.scratch('controlPointWeights');
+      },
+      'control-point-distances': function controlPointDistances(ele) {
+        return ele.scratch('controlPointDistances');
+      },
+      'edge-distances': 'intersection',
+      'edge-ends-overlap': false
+    }).update();
     g.edges().forEach(function (id) {
       var cyEdge = cy.getElementById(id.name);
       var dEdge = g.edge(id);
@@ -421,6 +412,8 @@ DagreLayout.prototype.run = function () {
         cyEdge.scratch(dagreEdgeToCytoscapeEdge(dEdge, cyEdge));
       }
     });
+  } else {
+    cy.edges().removeClass('useDagreEdgeControlPoints');
   }
   return this; // chaining
 };
