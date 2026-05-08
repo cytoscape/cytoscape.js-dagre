@@ -61,6 +61,9 @@
             'round-tag'
         ];
 
+        /**
+         * the edge layout is sensitive to node shapes, so we want to test in many different situations
+         */
         function randomShape() {
             return cytoscapeNodeShapes[Math.floor(Math.random() * cytoscapeNodeShapes.length)];
         }
@@ -74,8 +77,7 @@
                 "useDagreEdgeControlPoints": true,
                 "spacingFactor": 1,
                 "rankSep" :200,
-                "ranker": "network-simplex",
-                "debugDagreEdgeControlPoints": true
+                "ranker": "network-simplex"
             },
             "style": [
                 {   

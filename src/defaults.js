@@ -9,8 +9,8 @@ let defaults = {
                         // A feedback arc set is a set of edges that can be removed to make a graph acyclic.
   ranker:  undefined, // Type of algorithm to assigns a rank to each node in the input graph.
                       // Possible values: network-simplex, tight-tree or longest-path
-  minLen: function( edge ){ return 1; }, // number of ranks to keep between the source and target of the edge
-  edgeWeight: function( edge ){ return 1; }, // higher weight edges are generally made shorter and straighter than lower weight edges
+  minLen: function( _edge ){ return 1; }, // number of ranks to keep between the source and target of the edge
+  edgeWeight: function( _edge ){ return 1; }, // higher weight edges are generally made shorter and straighter than lower weight edges
 
   // general layout options
   fit: true, // whether to fit to viewport
@@ -18,8 +18,24 @@ let defaults = {
   spacingFactor: undefined, // Applies a multiplicative factor (>0) to expand or compress the overall area that the nodes take up
   nodeDimensionsIncludeLabels: false, // whether labels should be included in determining the space used by a node
   useDagreEdgeControlPoints: false, // enable bezier curves using dagre control points
+  /**
+   * Automatically adds edge class '.useDagreEdgeControlPoints' to all edges and configure it with this.dagreEdgeStyle.
+   * If set to `false` and `useDagreEdgeControlPoints` is `true` then apply `this.dagreEdgeStyle` yourself.
+   */
+  automaticDagreEdgeStyle: this.useDagreEdgeControlPoints,
+  /**
+   * Defines the style for rendering dagre edge control points stored by the layout algorithm
+   * if `useDagreEdgeControlPoints` is `true` and `automaticDagreEdgeStyle` is `true`
+   */
+  dagreEdgeStyle: {
+    'curve-style'             : 'unbundled-bezier',
+    'control-point-weights'   : ele => ele.scratch('controlPointWeights'),
+    'control-point-distances' : ele => ele.scratch('controlPointDistances'),
+    'edge-distances'          : 'intersection',
+    'edge-ends-overlap'       : false
+  },
   animate: false, // whether to transition the node positions
-  animateFilter: function( node, i ){ return true; }, // whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions
+  animateFilter: function( _node, i ){ return true; }, // whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions
   animationDuration: 500, // duration of animation in ms if enabled
   animationEasing: undefined, // easing of animation if enabled
   boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
@@ -29,7 +45,7 @@ let defaults = {
                    // because cytoscape dagre creates a directed graph, and directed graphs use the node order as a tie breaker when
                    // defining the topology of a graph, this sort function can help ensure the correct order of the nodes/edges.
                    // this feature is most useful when adding and removing the same nodes and edges multiple times in a graph.
-  stop: function(){} // on layoutstop
+  stop: function(){}, // on layoutstop
 };
 
 module.exports = defaults;

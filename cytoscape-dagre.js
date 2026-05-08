@@ -393,18 +393,10 @@ DagreLayout.prototype.run = function () {
     });
   });
   if (options.useDagreEdgeControlPoints) {
-    cy.edges().addClass('useDagreEdgeControlPoints');
-    cy.style().selector('edge.useDagreEdgeControlPoints').style({
-      'curve-style': 'unbundled-bezier',
-      'control-point-weights': function controlPointWeights(ele) {
-        return ele.scratch('controlPointWeights');
-      },
-      'control-point-distances': function controlPointDistances(ele) {
-        return ele.scratch('controlPointDistances');
-      },
-      'edge-distances': 'intersection',
-      'edge-ends-overlap': false
-    }).update();
+    if (options.automaticDagreEdgeStyle) {
+      cy.edges().addClass('useDagreEdgeControlPoints');
+      cy.style().selector('edge.useDagreEdgeControlPoints').style(options.getDagreEdgeStyle()).update();
+    }
     g.edges().forEach(function (id) {
       var cyEdge = cy.getElementById(id.name);
       var dEdge = g.edge(id);
@@ -412,8 +404,6 @@ DagreLayout.prototype.run = function () {
         cyEdge.scratch(dagreEdgeToCytoscapeEdge(dEdge, cyEdge));
       }
     });
-  } else {
-    cy.edges().removeClass('useDagreEdgeControlPoints');
   }
   return this; // chaining
 };
@@ -441,11 +431,11 @@ var defaults = {
   ranker: undefined,
   // Type of algorithm to assigns a rank to each node in the input graph.
   // Possible values: network-simplex, tight-tree or longest-path
-  minLen: function minLen(edge) {
+  minLen: function minLen(_edge) {
     return 1;
   },
   // number of ranks to keep between the source and target of the edge
-  edgeWeight: function edgeWeight(edge) {
+  edgeWeight: function edgeWeight(_edge) {
     return 1;
   },
   // higher weight edges are generally made shorter and straighter than lower weight edges
@@ -461,9 +451,29 @@ var defaults = {
   // whether labels should be included in determining the space used by a node
   useDagreEdgeControlPoints: false,
   // enable bezier curves using dagre control points
+  /**
+   * Automatically adds edge class '.useDagreEdgeControlPoints' to all edges and configure it with this.dagreEdgeStyle.
+   * If set to `false` and `useDagreEdgeControlPoints` is `true` then apply `this.dagreEdgeStyle` yourself.
+   */
+  automaticDagreEdgeStyle: this.useDagreEdgeControlPoints,
+  /**
+   * Defines the style for rendering dagre edge control points stored by the layout algorithm
+   * if `useDagreEdgeControlPoints` is `true` and `automaticDagreEdgeStyle` is `true`
+   */
+  dagreEdgeStyle: {
+    'curve-style': 'unbundled-bezier',
+    'control-point-weights': function controlPointWeights(ele) {
+      return ele.scratch('controlPointWeights');
+    },
+    'control-point-distances': function controlPointDistances(ele) {
+      return ele.scratch('controlPointDistances');
+    },
+    'edge-distances': 'intersection',
+    'edge-ends-overlap': false
+  },
   animate: false,
   // whether to transition the node positions
-  animateFilter: function animateFilter(node, i) {
+  animateFilter: function animateFilter(_node, i) {
     return true;
   },
   // whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions

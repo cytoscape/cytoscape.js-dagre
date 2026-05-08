@@ -8,6 +8,12 @@
     },
     "extends": "eslint:recommended",
     "rules": {
-      "semi": "error"
+      "semi": "error",
+   
+      "no-unused-vars": ["error", {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }]
     }
 }
