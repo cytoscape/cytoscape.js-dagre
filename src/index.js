@@ -7,8 +7,8 @@ let register = function( cytoscape ){
   cytoscape( 'layout', 'dagre', impl ); // register with cytoscape.js
 };
 
-if( typeof cytoscape !== 'undefined' ){ // expose to global cytoscape (i.e. window.cytoscape)
-  register( cytoscape );
+if( typeof window !== 'undefined' && typeof window.cytoscape !== 'undefined' ){ // expose to global cytoscape (i.e. window.cytoscape)
+  register( window.cytoscape );
 }
 
 module.exports = register;
