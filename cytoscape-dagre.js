@@ -72,13 +72,13 @@ var defaults = {
   ranker: undefined,
   // Type of algorithm to assigns a rank to each node in the input graph.
   // Possible values: network-simplex, tight-tree or longest-path
+  // eslint-disable-next-line no-unused-vars
   minLen: function minLen(edge) {
-    void edge;
     return 1;
   },
   // number of ranks to keep between the source and target of the edge
+  // eslint-disable-next-line no-unused-vars
   edgeWeight: function edgeWeight(edge) {
-    void edge;
     return 1;
   },
   // higher weight edges are generally made shorter and straighter than lower weight edges
@@ -94,9 +94,8 @@ var defaults = {
   // whether labels should be included in determining the space used by a node
   animate: false,
   // whether to transition the node positions
+  // eslint-disable-next-line no-unused-vars
   animateFilter: function animateFilter(node, i) {
-    void node;
-    void i;
     return true;
   },
   // whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions
