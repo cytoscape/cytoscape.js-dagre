@@ -61,7 +61,7 @@ var defaults = {
   edgeSep: undefined,
   // the separation between adjacent edges in the same rank
   rankSep: undefined,
-  // the separation between adjacent nodes in the same rank
+  // the separation between each rank in the layout
   rankDir: undefined,
   // 'TB' for top to bottom flow, 'LR' for left to right,
   align: undefined,
@@ -72,11 +72,13 @@ var defaults = {
   ranker: undefined,
   // Type of algorithm to assigns a rank to each node in the input graph.
   // Possible values: network-simplex, tight-tree or longest-path
-  minLen: function minLen() {
+  minLen: function minLen(edge) {
+    void edge;
     return 1;
   },
   // number of ranks to keep between the source and target of the edge
-  edgeWeight: function edgeWeight() {
+  edgeWeight: function edgeWeight(edge) {
+    void edge;
     return 1;
   },
   // higher weight edges are generally made shorter and straighter than lower weight edges
@@ -92,7 +94,9 @@ var defaults = {
   // whether labels should be included in determining the space used by a node
   animate: false,
   // whether to transition the node positions
-  animateFilter: function animateFilter() {
+  animateFilter: function animateFilter(node, i) {
+    void node;
+    void i;
     return true;
   },
   // whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions

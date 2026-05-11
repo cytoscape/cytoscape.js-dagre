@@ -12,7 +12,7 @@ The `dagre` layout organises the graph using a DAG (directed acyclic graph) syst
 ## Dependencies
 
  * Cytoscape.js ^3.2.0
- * @dagrejs/dagre ^2.0.1
+ * @dagrejs/dagre ^3.0.0
 
 
 ## Usage instructions
@@ -50,7 +50,7 @@ require(['cytoscape', 'cytoscape-dagre'], function( cytoscape, dagre ){
 });
 ```
 
-Plain HTML/JS has the extension registered for you automatically, because no `require()` is needed.
+Plain HTML/JS has the extension registered for you automatically, because no `require()` is needed.  Dagre v3 is bundled into `cytoscape-dagre.js`, so you do not need to include a separate dagre script.
 
 
 ## API
