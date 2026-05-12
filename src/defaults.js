@@ -2,7 +2,7 @@ let defaults = {
   // dagre algo options, uses default value on undefined
   nodeSep: undefined, // the separation between adjacent nodes in the same rank
   edgeSep: undefined, // the separation between adjacent edges in the same rank
-  rankSep: undefined, // the separation between adjacent nodes in the same rank
+  rankSep: undefined, // the separation between each rank in the layout
   rankDir: undefined, // 'TB' for top to bottom flow, 'LR' for left to right,
   align: undefined,  // alignment for rank nodes. Can be 'UL', 'UR', 'DL', or 'DR', where U = up, D = down, L = left, and R = right
   acyclicer: undefined, // If set to 'greedy', uses a greedy heuristic for finding a feedback arc set for a graph.

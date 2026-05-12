@@ -16,7 +16,7 @@
     "build:min": "cross-env NODE_ENV=production MIN=true webpack",
     "build:release": "run-s build copyright",
     "watch": "cross-env NODE_ENV=development webpack --progress --watch",
-    "dev": "webpack-dev-server --open",
+    "dev": "webpack serve --open",
     "test": "mocha"
   },
   "repository": {
@@ -33,29 +33,29 @@
   },
   "homepage": "https://github.com/cytoscape/cytoscape.js-dagre",
   "devDependencies": {
-    "@webpack-cli/serve": "^0.2.0",
-    "babel-core": "^6.26.3",
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.2",
+    "@webpack-cli/serve": "^2.0.5",
     "babel-loader": "^8.1.0",
-    "babel-preset-env": "^1.7.0",
     "camelcase": "^6.0.0",
     "chai": "4.2.0",
     "cpy-cli": "^3.1.1",
     "cross-env": "^7.0.2",
     "eslint": "^7.6.0",
-    "gh-pages": "^3.1.0",
-    "mocha": "^8.1.1",
+    "gh-pages": "^5.0.0",
+    "mocha": "8.1.1",
     "npm-run-all": "^4.1.5",
     "rimraf": "^3.0.2",
     "update": "^0.7.4",
     "updater-license": "^1.0.0",
-    "webpack": "^4.44.1",
-    "webpack-cli": "^3.3.12",
-    "webpack-dev-server": "^3.11.0"
+    "webpack": "^5.89.0",
+    "webpack-dev-server": "^4.15.1",
+    "webpack-cli": "^5.1.4"
   },
   "peerDependencies": {
     "cytoscape": "^3.2.22"
   },
   "dependencies": {
-    "dagre": "^0.8.5"
+    "@dagrejs/dagre": "^3.0.0"
   }
 }

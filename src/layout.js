@@ -1,7 +1,7 @@
 const isFunction = function(o){ return typeof o === 'function'; };
 const defaults = require('./defaults');
 const assign = require('./assign');
-const dagre = require('dagre');
+const dagre = require('@dagrejs/dagre');
 const EPSILON = 0.001; // what does it mean to be too close to 0?
 
 // constructor
