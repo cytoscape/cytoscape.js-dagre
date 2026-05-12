@@ -8,8 +8,14 @@ const MIN = env.MIN == 'true';
 const PROD = NODE_ENV === 'production';
 
 let config = {
-  mode: NODE_ENV,
+  mode: NODE_ENV || 'development',
   devtool: PROD ? false : 'inline-source-map',
+  devServer: {
+    static: {
+      directory: path.join(__dirname),
+    },
+    open: '/demo.html',
+  },
   entry: './src/index.js',
   output: {
     path: path.join( __dirname ),
