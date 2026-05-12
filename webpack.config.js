@@ -25,6 +25,11 @@ let config = {
       { test: /\.js$/, exclude: /node_modules/, use: 'babel-loader' }
     ]
   },
+    devServer: {
+        static: {
+            directory: path.join(__dirname, '/')
+        }
+    },
   externals: [],
   optimization: {
     minimize: MIN
