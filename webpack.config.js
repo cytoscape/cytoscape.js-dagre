@@ -12,7 +12,7 @@ let config = {
   devtool: PROD ? false : 'inline-source-map',
   devServer: {
     static: {
-      directory: path.join(__dirname),
+      directory: 'pages',
     },
     open: '/demo.html',
   },
