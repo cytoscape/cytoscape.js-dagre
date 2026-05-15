@@ -250,7 +250,7 @@ DagreLayout.prototype.run = function(){
       cy.edges().addClass('useDagreEdgeControlPoints');
       cy.style()
         .selector('edge.useDagreEdgeControlPoints')
-        .style(options.getDagreEdgeStyle())
+        .style(options.dagreEdgeStyle)
         .update();
     }
     
