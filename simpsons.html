@@ -1,0 +1,306 @@
+<!DOCTYPE>
+
+<html>
+
+  <head>
+    <title>cytoscape-dagre.js demo with different data and different layout parameters</title>
+
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.umd.js"></script>
+
+    <!-- for testing with local version of cytoscape.js -->
+    <!--<script src="../cytoscape.js/build/cytoscape.js"></script>-->
+
+    <script src="https://unpkg.com/dagre@0.7.4/dist/dagre.js"></script>
+    <script src="cytoscape-dagre.js"></script>
+
+    <style>
+      body {
+        font-family: helvetica;
+        font-size: 14px;
+      }
+
+      #cy {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 999;
+      }
+
+      h1 {
+        opacity: 0.5;
+        font-size: 1em;
+      }
+    </style>
+
+    <script>
+      window.addEventListener('DOMContentLoaded', function(){
+        const cytoscapeNodeShapes = [
+            'rectangle',
+            'round-rectangle',
+            'cut-rectangle',
+            'bottom-round-rectangle',
+            'barrel',
+            'ellipse',
+            'triangle',
+            'round-triangle',
+            'square',
+            'pentagon',
+            'hexagon',
+            'concave-hexagon',
+            'heptagon',
+            'octagon',
+            'star',
+            'diamond',
+            'vee',
+            'rhomboid',
+            'tag',
+            'round-tag'
+        ];
+
+        /**
+         * the edge layout is sensitive to node shapes, so we want to test in many different situations
+         */
+        function randomShape() {
+            return cytoscapeNodeShapes[Math.floor(Math.random() * cytoscapeNodeShapes.length)];
+        }
+
+        var cy = window.cy = cytoscape({
+            container: document.getElementById('cy'),
+
+            "layout": {
+                "animate": false,
+                "name": "dagre",
+                "useDagreEdgeControlPoints": true,
+                "automaticDagreEdgeStyle" : true,
+                "spacingFactor": 1,
+                "rankSep" :75,
+                "ranker": "network-simplex"
+            },
+            "style": [
+                {   
+                    "selector": "node",
+                    "style": {
+                        "shape": "data(shape)",
+                        "color": "white",
+                        "background-color": "blue",
+                        "width": "label",
+                        "opacity": "1",
+                        "text-valign": "center",
+                        "padding": "10pt",
+                        "visibility": "visible",
+                        "label": "data(label)",
+                        "font-weight": "bold",
+                        "text-halign": "center",
+                        "font-size": "20pt"
+                    }
+                },
+                {
+                    "selector": "edge",
+                    "style": {
+                        "target-arrow-shape": "triangle",
+                        "width": 10,
+                        "line-color": "black",
+                        "source-arrow-color": "black",
+                        "curve-style": "unbundled-bezier",
+                        "line-style": "solid",
+                        "target-arrow-color": "black",
+                        "color": "red",
+                        "opacity": "1",
+                        "source-arrow-shape": "none",
+                        "visibility": "visible",
+                        "line-opacity": "1"
+                    }
+                }
+            ],
+            "elements": {
+                nodes: [
+                {
+                    "data": {
+                        "id": "Lisa Simpson",
+                        "label": "Lisa Simpson",
+                        "shape" : randomShape()
+                    }
+                },
+                {
+                    "data": {
+                        "id": "Maggie Simpson",
+                        "label": "Maggie Simpson",
+                        "shape" : randomShape()
+                    }
+                },
+                {
+                    "data": {
+                        "id": "Homer Simpson",
+                        "label": "Homer Simpson",
+                        "shape" : randomShape()
+                    }
+                },
+                {
+                    "data": {
+                        "id": "Patty Bouvier",
+                        "label": "Patty Bouvier",
+                        "shape" : randomShape()
+                    }
+                },
+                {
+                    "data": {
+                        "id": "Marge Simpson",
+                        "label": "Marge Simpson",
+                        "shape" : randomShape()
+                    }
+                },
+                {
+                    "data": {
+                        "id": "Selma Bouvier",
+                        "label": "Selma Bouvier",
+                        "shape" : randomShape()
+                    }
+                },
+                {
+                    "data": {
+                        "id": "Abraham Simpson",
+                        "label": "Abraham Simpson",
+                        "shape" : randomShape()
+                    }
+                },
+                {
+                    "data": {
+                        "id": "Mona Simpson",
+                        "label": "Mona Simpson",
+                        "shape" : randomShape()
+                    }
+                },
+                {
+                    "data": {
+                        "id": "Rod Flanders",
+                        "label": "Rod Flanders",
+                        "shape" : randomShape()
+                    }
+                },
+                {
+                    "data": {
+                        "id": "Bart Simpson",
+                        "label": "Bart Simpson",
+                        "shape" : randomShape()
+                    }
+                },
+                {
+                    "data": {
+                        "id": "Todd Flanders",
+                        "label": "Todd Flanders",
+                        "shape" : randomShape()
+                    }
+                }
+            ],
+            edges: [
+                {
+                    "data": {
+                        "source": "Lisa Simpson",
+                        "target": "Bart Simpson"
+                    }
+                },
+                {
+                    "data": {
+                        "source": "Homer Simpson",
+                        "target": "Lisa Simpson"
+                    }
+                },
+                {
+                    "data": {
+                        "source": "Homer Simpson",
+                        "target": "Maggie Simpson"
+                    }
+                },
+                {
+                    "data": {
+                        "source": "Homer Simpson",
+                        "target": "Bart Simpson"
+                    }
+                },
+                {
+                    "data": {
+                        "source": "Mona Simpson",
+                        "target": "Homer Simpson"
+                    }
+                },
+                {
+                    "data": {
+                        "source": "Mona Simpson",
+                        "target": "Patty Bouvier"
+                    }
+                },
+                {
+                    "data": {
+                        "source": "Mona Simpson",
+                        "target": "Selma Bouvier"
+                    }
+                },
+                {
+                    "data": {
+                        "source": "Marge Simpson",
+                        "target": "Lisa Simpson"
+                    }
+                },
+                {
+                    "data": {
+                        "source": "Marge Simpson",
+                        "target": "Maggie Simpson"
+                    }
+                },
+                {
+                    "data": {
+                        "source": "Marge Simpson",
+                        "target": "Bart Simpson"
+                    }
+                },
+                {
+                    "data": {
+                        "source": "Bart Simpson",
+                        "target": "Rod Flanders"
+                    }
+                },
+                {
+                    "data": {
+                        "source": "Bart Simpson",
+                        "target": "Todd Flanders"
+                    }
+                },
+                {
+                    "data": {
+                        "source": "Abraham Simpson",
+                        "target": "Homer Simpson"
+                    }
+                },
+                {
+                    "data": {
+                        "source": "Abraham Simpson",
+                        "target": "Patty Bouvier"
+                    }
+                },
+                {
+                    "data": {
+                        "source": "Abraham Simpson",
+                        "target": "Selma Bouvier"
+                    }
+                }
+            ]
+        }    
+        });
+      });
+    </script>
+  </head>
+
+  <body>
+    <h1>cytoscape-dagre demo</h1>
+
+    <div id="cy"></div>
+
+  </body>
+
+</html>
+
+

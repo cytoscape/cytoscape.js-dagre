@@ -2,11 +2,103 @@ const isFunction = function(o){ return typeof o === 'function'; };
 const defaults = require('./defaults');
 const assign = require('./assign');
 const dagre = require('@dagrejs/dagre');
+const EPSILON = 0.001; // what does it mean to be too close to 0?
 
 // constructor
 // options : object containing layout options
-function DagreLayout( options ){
+function DagreLayout( options ) {
   this.options = assign( {}, defaults, options );
+}
+
+function subtract(a, b) {
+  return { x: noZero(a.x - b.x), y: noZero(a.y - b.y) };
+}
+
+function product(a, b) {
+  return noZero(a.x * b.x) + noZero(a.y * b.y);
+}
+
+function norm(v) {
+  const len = Math.hypot(v.x, v.y) || 1;
+  return { x: v.x / len, y: v.y / len, len };
+}
+
+function perp(v) {
+  return { x: -v.y, y: v.x };
+}
+
+/* provides the context for mapping from dagre's x, y coordinate system
+ * for control points to cytoscapes coordinate system for control points
+ * which is relative to the straight vector from source to target node
+ */
+function buildEdgeFrame(src, tgt) {
+  const d = subtract(tgt, src);
+  const { x, y, len } = norm(d);
+
+  const dir = { x, y };
+  const normal = perp(dir);
+
+  return { src, tgt, dir, normal, len };
+}
+
+function noZero(x) {
+  if (Math.abs(x) < EPSILON) {
+    return x < 0 ? -EPSILON : EPSILON;
+  }
+
+  return x;
+}
+
+function toEdgeCoordinates(P, frame) {
+  const vector = subtract(P, frame.src);
+  const weight = noZero(product(vector, frame.dir) / frame.len);
+  const distance = noZero(product(vector, frame.normal));
+
+  return { weight, distance };
+}
+
+function normalizeWeight(coords) {
+  let min = Infinity;
+  let max = -Infinity;
+
+  for (const p of coords) {
+    if (p.weight < min) {
+      min = p.weight;
+    }
+
+    if (p.weight > max) {
+      max = p.weight;
+    }
+  }
+
+  const range = max - min || 1;
+
+  return coords.map(p => ({
+    distance: p.distance,
+    weight: (p.weight - min) / range
+  }));
+}
+
+/* First introduce new control points to bridge between the dagre list of 
+ * points and the centres of cytoscape nodes.
+ * Then we sanitize any empty or non-existing or degenerate control points
+ * And finally we map the Dagre coordinates to the Cytoscape coordinated which
+ * are relative to the original direction vector from source to target.
+ * These final coordinates are stored pairwise in two arrays cpw and cpd
+ * which are picked up by the Bezier construction code in cytoscape.
+ */
+function dagreEdgeToCytoscapeEdge(dEdge, cEdge) {
+  const fromNode = cEdge.source().position();
+  const toNode = cEdge.target().position();
+  const frame = buildEdgeFrame(fromNode, toNode);
+  const coords = normalizeWeight(dEdge.points.map(p => toEdgeCoordinates(p, frame)));
+  
+  const controlPointWeights = coords.slice(1,-1).map(c => c.weight);
+  const controlPointDistances = coords.slice(1,-1).map(c => c.distance);
+
+  const result = { controlPointWeights, controlPointDistances };
+
+  return result;
 }
 
 // runs the layout
@@ -66,10 +158,9 @@ DagreLayout.prototype.run = function(){
     g.setNode( node.id(), {
       width: nbb.w,
       height: nbb.h,
+      shape: 'ellipse',
       name: node.id()
     } );
-
-    // console.log( g.node(node.id()) );
   }
 
   // set compound parents
@@ -98,8 +189,6 @@ DagreLayout.prototype.run = function(){
       weight: getVal( edge, options.edgeWeight ),
       name: edge.id()
     }, edge.id() );
-
-    // console.log( g.edge(edge.source().id(), edge.target().id(), edge.id()) );
   }
 
   dagre.layout( g );
@@ -156,7 +245,27 @@ DagreLayout.prototype.run = function(){
     });
   });
 
+  if (options.useDagreEdgeControlPoints) {
+    if (options.automaticDagreEdgeStyle) {
+      cy.edges().addClass('useDagreEdgeControlPoints');
+      cy.style()
+        .selector('edge.useDagreEdgeControlPoints')
+        .style(options.dagreEdgeStyle)
+        .update();
+    }
+    
+    g.edges().forEach(id => {
+      const cyEdge = cy.getElementById(id.name);
+      const dEdge = g.edge(id);
+
+      if (dEdge && dEdge.points) {
+        cyEdge.scratch(dagreEdgeToCytoscapeEdge(dEdge, cyEdge));
+      }
+    });
+  }
+  
   return this; // chaining
 };
 
 module.exports = DagreLayout;
+

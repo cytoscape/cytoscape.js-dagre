@@ -54,69 +54,142 @@ module.exports = Object.assign != null ? Object.assign.bind(Object) : function (
 /***/ 299
 (module) {
 
+/** 
+ * Dagre algorithmic options. The default value of dagre.js is used
+ * when the option is left undefined here.
+ */
 var defaults = {
-  // dagre algo options, uses default value on undefined
+  /**
+   * the separation between adjacent nodes in the same rank
+   */
   nodeSep: undefined,
-  // the separation between adjacent nodes in the same rank
+  /**
+   * The separation between adjacent edges in the same rank
+   */
   edgeSep: undefined,
-  // the separation between adjacent edges in the same rank
+  /**
+   * The separation between each rank in the layout
+   */
   rankSep: undefined,
-  // the separation between each rank in the layout
+  /**
+   * Direction in which ranks flow: `'TB'` for top to bottom flow, `'LR'` for left to right,
+   */
   rankDir: undefined,
-  // 'TB' for top to bottom flow, 'LR' for left to right,
+  /**
+   * alignment for rank nodes. Can be `'UL'`, `'UR'`, `'DL'`, or `'DR'`, 
+   * where `U` = up, `D` = down, `L` = left, and `R` = right
+   */
   align: undefined,
-  // alignment for rank nodes. Can be 'UL', 'UR', 'DL', or 'DR', where U = up, D = down, L = left, and R = right
+  /**
+   * If set to `'greedy'`, uses a greedy heuristic for finding a feedback arc set for a graph.
+   * A feedback arc set is a set of edges that can be removed to make a graph acyclic.
+   */
   acyclicer: undefined,
-  // If set to 'greedy', uses a greedy heuristic for finding a feedback arc set for a graph.
-  // A feedback arc set is a set of edges that can be removed to make a graph acyclic.
+  /**
+   * Type of algorithm to assigns a rank to each node in the input graph.
+   * Possible values: 
+   *    * `'network-simplex'`, 
+   *    * `'tight-tree'` or
+   *    * `'longest-path'`
+   */
   ranker: undefined,
-  // Type of algorithm to assigns a rank to each node in the input graph.
-  // Possible values: network-simplex, tight-tree or longest-path
-  // eslint-disable-next-line no-unused-vars
-  minLen: function minLen(edge) {
+  /**
+   * Number of ranks to keep between the source and target of the edge
+   */
+  minLen: function minLen(_edge) {
     return 1;
   },
-  // number of ranks to keep between the source and target of the edge
-  // eslint-disable-next-line no-unused-vars
-  edgeWeight: function edgeWeight(edge) {
+  /**
+   * Higher weight edges are generally made shorter and straighter than lower weight edges} _edge 
+   */
+  edgeWeight: function edgeWeight(_edge) {
     return 1;
   },
-  // higher weight edges are generally made shorter and straighter than lower weight edges
-
-  // general layout options
+  /* general layout options */
+  /**
+   * whether to fit to viewport
+   */
   fit: true,
-  // whether to fit to viewport
+  /**
+   * Fit padding
+   */
   padding: 30,
-  // fit padding
+  /**
+   * Applies a multiplicative factor (>0) to expand or compress the overall area that the nodes take up
+   */
   spacingFactor: undefined,
-  // Applies a multiplicative factor (>0) to expand or compress the overall area that the nodes take up
+  /**
+   * Whether labels should be included in determining the space used by a node
+   */
   nodeDimensionsIncludeLabels: false,
-  // whether labels should be included in determining the space used by a node
+  /**
+   * Enables bezier curves using dagre's edge control points
+   */
+  useDagreEdgeControlPoints: false,
+  /**
+   * Automatically adds edge class '.useDagreEdgeControlPoints' to all edges and configure it with this.dagreEdgeStyle.
+   * If set to `false` and `useDagreEdgeControlPoints` is `true` then apply `this.dagreEdgeStyle` yourself.
+   */
+  automaticDagreEdgeStyle: this.useDagreEdgeControlPoints,
+  /**
+   * Defines the style for rendering dagre edge control points stored by the layout algorithm
+   * if `useDagreEdgeControlPoints` is `true` and `automaticDagreEdgeStyle` is `true`
+   */
+  dagreEdgeStyle: {
+    'curve-style': 'unbundled-bezier',
+    'control-point-weights': function controlPointWeights(ele) {
+      return ele.scratch('controlPointWeights');
+    },
+    'control-point-distances': function controlPointDistances(ele) {
+      return ele.scratch('controlPointDistances');
+    },
+    'edge-distances': 'intersection',
+    'edge-ends-overlap': false
+  },
+  /**
+   * Whether to transition the node positions
+   */
   animate: false,
-  // whether to transition the node positions
-  // eslint-disable-next-line no-unused-vars
-  animateFilter: function animateFilter(node, i) {
+  /**
+   * Whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions
+   */
+  animateFilter: function animateFilter(_node, i) {
     return true;
   },
-  // whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions
+  /**
+   * Duration of animation in ms if enabled
+   */
   animationDuration: 500,
-  // duration of animation in ms if enabled
+  /**
+   * Easing of animation, if enabled
+   */
   animationEasing: undefined,
-  // easing of animation if enabled
+  /**
+   * Constrain outermost layout bounds; `{ x1, y1, x2, y2 }` or `{ x1, y1, w, h }`
+   */
   boundingBox: undefined,
-  // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
+  /**
+   * A function that applies a transform to the final node position
+   */
   transform: function transform(node, pos) {
     return pos;
   },
-  // a function that applies a transform to the final node position
+  /**
+   * On layoutready execute this function
+   */
   ready: function ready() {},
-  // on layoutready
+  /**
+   * A sorting function to order the nodes and edges; e.g. `function(a, b){ return a.data('weight') - b.data('weight')`. }
+   * Because cytoscape dagre creates a directed graph, and directed graphs use the node order as a tie breaker when
+   * defining the topology of a graph, this sort function can help ensure the correct order of the nodes/edges.
+   * This feature is most useful when adding and removing the same nodes and edges multiple times in a graph,
+   * but it can also help avoid sprurious edge crossings between ranks.
+   */
   sort: undefined,
-  // a sorting function to order the nodes and edges; e.g. function(a, b){ return a.data('weight') - b.data('weight') }
-  // because cytoscape dagre creates a directed graph, and directed graphs use the node order as a tie breaker when
-  // defining the topology of a graph, this sort function can help ensure the correct order of the nodes/edges.
-  // this feature is most useful when adding and removing the same nodes and edges multiple times in a graph.
-  stop: function stop() {} // on layoutstop
+  /**
+   * on layoutstop, execute this function
+   */
+  stop: function stop() {}
 };
 module.exports = defaults;
 
@@ -147,17 +220,139 @@ module.exports = register;
 (module, __unused_webpack_exports, __webpack_require__) {
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 var isFunction = function isFunction(o) {
   return typeof o === 'function';
 };
 var defaults = __webpack_require__(299);
 var assign = __webpack_require__(432);
 var dagre = __webpack_require__(155);
+var EPSILON = 0.001; // what does it mean to be too close to 0?
 
 // constructor
 // options : object containing layout options
 function DagreLayout(options) {
   this.options = assign({}, defaults, options);
+}
+function subtract(a, b) {
+  return {
+    x: noZero(a.x - b.x),
+    y: noZero(a.y - b.y)
+  };
+}
+function product(a, b) {
+  return noZero(a.x * b.x) + noZero(a.y * b.y);
+}
+function norm(v) {
+  var len = Math.hypot(v.x, v.y) || 1;
+  return {
+    x: v.x / len,
+    y: v.y / len,
+    len: len
+  };
+}
+function perp(v) {
+  return {
+    x: -v.y,
+    y: v.x
+  };
+}
+
+/* provides the context for mapping from dagre's x, y coordinate system
+ * for control points to cytoscapes coordinate system for control points
+ * which is relative to the straight vector from source to target node
+ */
+function buildEdgeFrame(src, tgt) {
+  var d = subtract(tgt, src);
+  var _norm = norm(d),
+    x = _norm.x,
+    y = _norm.y,
+    len = _norm.len;
+  var dir = {
+    x: x,
+    y: y
+  };
+  var normal = perp(dir);
+  return {
+    src: src,
+    tgt: tgt,
+    dir: dir,
+    normal: normal,
+    len: len
+  };
+}
+function noZero(x) {
+  if (Math.abs(x) < EPSILON) {
+    return x < 0 ? -EPSILON : EPSILON;
+  }
+  return x;
+}
+function toEdgeCoordinates(P, frame) {
+  var vector = subtract(P, frame.src);
+  var weight = noZero(product(vector, frame.dir) / frame.len);
+  var distance = noZero(product(vector, frame.normal));
+  return {
+    weight: weight,
+    distance: distance
+  };
+}
+function normalizeWeight(coords) {
+  var min = Infinity;
+  var max = -Infinity;
+  var _iterator = _createForOfIteratorHelper(coords),
+    _step;
+  try {
+    for (_iterator.s(); !(_step = _iterator.n()).done;) {
+      var p = _step.value;
+      if (p.weight < min) {
+        min = p.weight;
+      }
+      if (p.weight > max) {
+        max = p.weight;
+      }
+    }
+  } catch (err) {
+    _iterator.e(err);
+  } finally {
+    _iterator.f();
+  }
+  var range = max - min || 1;
+  return coords.map(function (p) {
+    return {
+      distance: p.distance,
+      weight: (p.weight - min) / range
+    };
+  });
+}
+
+/* First introduce new control points to bridge between the dagre list of 
+ * points and the centres of cytoscape nodes.
+ * Then we sanitize any empty or non-existing or degenerate control points
+ * And finally we map the Dagre coordinates to the Cytoscape coordinated which
+ * are relative to the original direction vector from source to target.
+ * These final coordinates are stored pairwise in two arrays cpw and cpd
+ * which are picked up by the Bezier construction code in cytoscape.
+ */
+function dagreEdgeToCytoscapeEdge(dEdge, cEdge) {
+  var fromNode = cEdge.source().position();
+  var toNode = cEdge.target().position();
+  var frame = buildEdgeFrame(fromNode, toNode);
+  var coords = normalizeWeight(dEdge.points.map(function (p) {
+    return toEdgeCoordinates(p, frame);
+  }));
+  var controlPointWeights = coords.slice(1, -1).map(function (c) {
+    return c.weight;
+  });
+  var controlPointDistances = coords.slice(1, -1).map(function (c) {
+    return c.distance;
+  });
+  var result = {
+    controlPointWeights: controlPointWeights,
+    controlPointDistances: controlPointDistances
+  };
+  return result;
 }
 
 // runs the layout
@@ -223,10 +418,9 @@ DagreLayout.prototype.run = function () {
     g.setNode(node.id(), {
       width: nbb.w,
       height: nbb.h,
+      shape: 'ellipse',
       name: node.id()
     });
-
-    // console.log( g.node(node.id()) );
   }
 
   // set compound parents
@@ -251,8 +445,6 @@ DagreLayout.prototype.run = function () {
       weight: getVal(edge, options.edgeWeight),
       name: edge.id()
     }, edge.id());
-
-    // console.log( g.edge(edge.source().id(), edge.target().id(), edge.id()) );
   }
   dagre.layout(g);
   var gNodeIds = g.nodes();
@@ -301,6 +493,19 @@ DagreLayout.prototype.run = function () {
       y: dModel.y
     });
   });
+  if (options.useDagreEdgeControlPoints) {
+    if (options.automaticDagreEdgeStyle) {
+      cy.edges().addClass('useDagreEdgeControlPoints');
+      cy.style().selector('edge.useDagreEdgeControlPoints').style(options.dagreEdgeStyle).update();
+    }
+    g.edges().forEach(function (id) {
+      var cyEdge = cy.getElementById(id.name);
+      var dEdge = g.edge(id);
+      if (dEdge && dEdge.points) {
+        cyEdge.scratch(dagreEdgeToCytoscapeEdge(dEdge, cyEdge));
+      }
+    });
+  }
   return this; // chaining
 };
 module.exports = DagreLayout;
@@ -327,7 +532,7 @@ module.exports = DagreLayout;
 /******/ 		};
 /******/ 	
 /******/ 		// Execute the module function
-/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __webpack_require__);
 /******/ 	
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
