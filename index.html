@@ -7,12 +7,11 @@
 
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
 
-    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.umd.js"></script>
 
     <!-- for testing with local version of cytoscape.js -->
     <!--<script src="../cytoscape.js/build/cytoscape.js"></script>-->
 
-    <script src="https://unpkg.com/dagre@0.7.4/dist/dagre.js"></script>
     <script src="cytoscape-dagre.js"></script>
 
     <style>
@@ -46,14 +45,16 @@
           autounselectify: true,
 
           layout: {
-            name: 'dagre'
+            name: 'dagre',
           },
 
           style: [
             {
               selector: 'node',
               style: {
-                'background-color': '#11479e'
+                'shape' : 'circle',
+                'background-color': '#11479e',
+                'background-opacity': '0.5'
               }
             },
 
