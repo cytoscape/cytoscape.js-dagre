@@ -54,44 +54,78 @@ module.exports = Object.assign != null ? Object.assign.bind(Object) : function (
 /***/ 299
 (module) {
 
+/** 
+ * Dagre algorithmic options. The default value of dagre.js is used
+ * when the option is left undefined here.
+ */
 var defaults = {
-  // dagre algo options, uses default value on undefined
+  /**
+   * the separation between adjacent nodes in the same rank
+   */
   nodeSep: undefined,
-  // the separation between adjacent nodes in the same rank
+  /**
+   * The separation between adjacent edges in the same rank
+   */
   edgeSep: undefined,
-  // the separation between adjacent edges in the same rank
+  /**
+   * The separation between each rank in the layout
+   */
   rankSep: undefined,
-  // the separation between each rank in the layout
+  /**
+   * Direction in which ranks flow: `'TB'` for top to bottom flow, `'LR'` for left to right,
+   */
   rankDir: undefined,
-  // 'TB' for top to bottom flow, 'LR' for left to right,
+  /**
+   * alignment for rank nodes. Can be `'UL'`, `'UR'`, `'DL'`, or `'DR'`, 
+   * where `U` = up, `D` = down, `L` = left, and `R` = right
+   */
   align: undefined,
-  // alignment for rank nodes. Can be 'UL', 'UR', 'DL', or 'DR', where U = up, D = down, L = left, and R = right
+  /**
+   * If set to `'greedy'`, uses a greedy heuristic for finding a feedback arc set for a graph.
+   * A feedback arc set is a set of edges that can be removed to make a graph acyclic.
+   */
   acyclicer: undefined,
-  // If set to 'greedy', uses a greedy heuristic for finding a feedback arc set for a graph.
-  // A feedback arc set is a set of edges that can be removed to make a graph acyclic.
+  /**
+   * Type of algorithm to assigns a rank to each node in the input graph.
+   * Possible values: 
+   *    * `'network-simplex'`, 
+   *    * `'tight-tree'` or
+   *    * `'longest-path'`
+   */
   ranker: undefined,
-  // Type of algorithm to assigns a rank to each node in the input graph.
-  // Possible values: network-simplex, tight-tree or longest-path
+  /**
+   * Number of ranks to keep between the source and target of the edge
+   */
   minLen: function minLen(_edge) {
     return 1;
   },
-  // number of ranks to keep between the source and target of the edge
+  /**
+   * Higher weight edges are generally made shorter and straighter than lower weight edges} _edge 
+   */
   edgeWeight: function edgeWeight(_edge) {
     return 1;
   },
-  // higher weight edges are generally made shorter and straighter than lower weight edges
-
-  // general layout options
+  /* general layout options */
+  /**
+   * whether to fit to viewport
+   */
   fit: true,
-  // whether to fit to viewport
+  /**
+   * Fit padding
+   */
   padding: 30,
-  // fit padding
+  /**
+   * Applies a multiplicative factor (>0) to expand or compress the overall area that the nodes take up
+   */
   spacingFactor: undefined,
-  // Applies a multiplicative factor (>0) to expand or compress the overall area that the nodes take up
+  /**
+   * Whether labels should be included in determining the space used by a node
+   */
   nodeDimensionsIncludeLabels: false,
-  // whether labels should be included in determining the space used by a node
+  /**
+   * Enables bezier curves using dagre's edge control points
+   */
   useDagreEdgeControlPoints: false,
-  // enable bezier curves using dagre control points
   /**
    * Automatically adds edge class '.useDagreEdgeControlPoints' to all edges and configure it with this.dagreEdgeStyle.
    * If set to `false` and `useDagreEdgeControlPoints` is `true` then apply `this.dagreEdgeStyle` yourself.
@@ -112,30 +146,50 @@ var defaults = {
     'edge-distances': 'intersection',
     'edge-ends-overlap': false
   },
+  /**
+   * Whether to transition the node positions
+   */
   animate: false,
-  // whether to transition the node positions
+  /**
+   * Whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions
+   */
   animateFilter: function animateFilter(_node, i) {
     return true;
   },
-  // whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions
+  /**
+   * Duration of animation in ms if enabled
+   */
   animationDuration: 500,
-  // duration of animation in ms if enabled
+  /**
+   * Easing of animation, if enabled
+   */
   animationEasing: undefined,
-  // easing of animation if enabled
+  /**
+   * Constrain outermost layout bounds; `{ x1, y1, x2, y2 }` or `{ x1, y1, w, h }`
+   */
   boundingBox: undefined,
-  // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
+  /**
+   * A function that applies a transform to the final node position
+   */
   transform: function transform(node, pos) {
     return pos;
   },
-  // a function that applies a transform to the final node position
+  /**
+   * On layoutready execute this function
+   */
   ready: function ready() {},
-  // on layoutready
+  /**
+   * A sorting function to order the nodes and edges; e.g. `function(a, b){ return a.data('weight') - b.data('weight')`. }
+   * Because cytoscape dagre creates a directed graph, and directed graphs use the node order as a tie breaker when
+   * defining the topology of a graph, this sort function can help ensure the correct order of the nodes/edges.
+   * This feature is most useful when adding and removing the same nodes and edges multiple times in a graph,
+   * but it can also help avoid sprurious edge crossings between ranks.
+   */
   sort: undefined,
-  // a sorting function to order the nodes and edges; e.g. function(a, b){ return a.data('weight') - b.data('weight') }
-  // because cytoscape dagre creates a directed graph, and directed graphs use the node order as a tie breaker when
-  // defining the topology of a graph, this sort function can help ensure the correct order of the nodes/edges.
-  // this feature is most useful when adding and removing the same nodes and edges multiple times in a graph.
-  stop: function stop() {} // on layoutstop
+  /**
+   * on layoutstop, execute this function
+   */
+  stop: function stop() {}
 };
 module.exports = defaults;
 
@@ -442,7 +496,7 @@ DagreLayout.prototype.run = function () {
   if (options.useDagreEdgeControlPoints) {
     if (options.automaticDagreEdgeStyle) {
       cy.edges().addClass('useDagreEdgeControlPoints');
-      cy.style().selector('edge.useDagreEdgeControlPoints').style(options.getDagreEdgeStyle()).update();
+      cy.style().selector('edge.useDagreEdgeControlPoints').style(options.dagreEdgeStyle).update();
     }
     g.edges().forEach(function (id) {
       var cyEdge = cy.getElementById(id.name);
