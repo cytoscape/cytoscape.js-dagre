@@ -12,7 +12,7 @@ The `dagre` layout organises the graph using a DAG (directed acyclic graph) syst
 ## Dependencies
 
  * Cytoscape.js ^3.2.0
- * @dagrejs/dagre ^3.0.0
+ * Dagre v3 is bundled into the distributed extension files
 
 
 ## Usage instructions
@@ -50,7 +50,7 @@ require(['cytoscape', 'cytoscape-dagre'], function( cytoscape, dagre ){
 });
 ```
 
-Plain HTML/JS has the extension registered for you automatically, because no `require()` is needed.  Dagre v3 is bundled into `cytoscape-dagre.js`, so you do not need to include a separate dagre script.
+Plain HTML/JS has the extension registered for you automatically, because no `require()` is needed.  Dagre v3 is bundled into `dist/cytoscape-dagre.js`, so you do not need to include a separate dagre script.
 
 
 ## API
@@ -119,9 +119,8 @@ copy the fields of `dagreEdgeStyle` exactly.
 ## Build targets
 
 * `npm run test` : Run Mocha tests in `./test`
-* `npm run build` : Build `./src/**` into `cytoscape-dagre.js`
-* `npm run watch` : Automatically build on changes with live reloading (N.b. you must already have an HTTP server running)
-* `npm run dev` : Automatically build on changes with live reloading with webpack dev server
+* `npm run build` : Build `./src/**` into UMD and ESM files in `dist/`
+* `npm run watch` : Automatically rebuild Rollup outputs on changes
 * `npm run lint` : Run eslint on the source
 
 N.b. all builds use babel, so modern ES features can be used in the `src`.

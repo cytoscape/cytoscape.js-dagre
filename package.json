@@ -2,7 +2,23 @@
   "name": "cytoscape-dagre",
   "version": "3.0.0",
   "description": "The Dagre layout for DAGs and trees for Cytoscape.js",
-  "main": "cytoscape-dagre.js",
+  "main": "dist/cytoscape-dagre.js",
+  "module": "dist/cytoscape-dagre.mjs",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./dist/cytoscape-dagre.mjs",
+      "require": "./dist/cytoscape-dagre.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "test",
+    "index.d.ts"
+  ],
   "author": {
     "name": "Max Franz",
     "email": "maxkfranz@gmail.com"
@@ -11,13 +27,13 @@
     "postpublish": "run-s gh-pages",
     "gh-pages": "gh-pages -d pages",
     "copyright": "update license",
-    "lint": "eslint src",
-    "build": "cross-env NODE_ENV=production webpack",
-    "build:min": "cross-env NODE_ENV=production MIN=true webpack",
-    "build:release": "run-s build copyright",
-    "watch": "cross-env NODE_ENV=development webpack --progress --watch",
-    "dev": "webpack serve --open",
-    "test": "mocha"
+    "lint": "eslint src --ext .mjs",
+    "build": "rollup -c",
+    "build:min": "rollup -c",
+    "build:release": "run-s build build:min copyright",
+    "watch": "rollup -c --watch",
+    "test": "run-s build test:mocha",
+    "test:mocha": "mocha \"test/**/*.test.mjs\""
   },
   "repository": {
     "type": "git",
@@ -35,8 +51,11 @@
   "devDependencies": {
     "@babel/core": "^7.29.0",
     "@babel/preset-env": "^7.29.2",
-    "@webpack-cli/serve": "^2.0.5",
-    "babel-loader": "^8.1.0",
+    "@dagrejs/dagre": "^3.0.0",
+    "@rollup/plugin-babel": "^7.0.0",
+    "@rollup/plugin-commonjs": "^29.0.2",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-terser": "^1.0.0",
     "camelcase": "^6.0.0",
     "chai": "4.2.0",
     "cpy-cli": "^3.1.1",
@@ -46,16 +65,11 @@
     "mocha": "8.1.1",
     "npm-run-all": "^4.1.5",
     "rimraf": "^3.0.2",
+    "rollup": "^4.60.4",
     "update": "^0.7.4",
-    "updater-license": "^1.0.0",
-    "webpack": "^5.89.0",
-    "webpack-dev-server": "^4.15.1",
-    "webpack-cli": "^5.1.4"
+    "updater-license": "^1.0.0"
   },
   "peerDependencies": {
     "cytoscape": "^3.2.22"
-  },
-  "dependencies": {
-    "@dagrejs/dagre": "^3.0.0"
   }
 }

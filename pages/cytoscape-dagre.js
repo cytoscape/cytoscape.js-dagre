@@ -1,1 +1,1 @@
-../cytoscape-dagre.js
+../dist/cytoscape-dagre.js

@@ -1,4 +1,4 @@
-const impl = require('./layout');
+import impl from './layout.mjs';
 
 // registers the extension on a cytoscape lib ref
 let register = function( cytoscape ){
@@ -11,4 +11,4 @@ if( typeof window !== 'undefined' && typeof window.cytoscape !== 'undefined' ){ 
   register( window.cytoscape );
 }
 
-module.exports = register;
+export default register;

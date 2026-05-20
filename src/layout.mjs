@@ -1,7 +1,8 @@
+import defaults from './defaults.mjs';
+import assign from './assign.mjs';
+import dagre from '@dagrejs/dagre';
+
 const isFunction = function(o){ return typeof o === 'function'; };
-const defaults = require('./defaults');
-const assign = require('./assign');
-const dagre = require('@dagrejs/dagre');
 const EPSILON = 0.001; // what does it mean to be too close to 0?
 
 // constructor
@@ -267,5 +268,4 @@ DagreLayout.prototype.run = function(){
   return this; // chaining
 };
 
-module.exports = DagreLayout;
-
+export default DagreLayout;

@@ -1,7 +1,7 @@
 {
   "name": "cytoscape-dagre",
   "description": "The Dagre layout for DAGs and trees for Cytoscape.js",
-  "main": "cytoscape-dagre.js",
+  "main": "dist/cytoscape-dagre.js",
   "dependencies": {
     "cytoscape": "^3.2.0"
   },

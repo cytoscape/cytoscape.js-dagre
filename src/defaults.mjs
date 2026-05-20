@@ -2,7 +2,7 @@
  * Dagre algorithmic options. The default value of dagre.js is used
  * when the option is left undefined here.
  */
-let defaults = {
+const defaults = {
   /**
    * the separation between adjacent nodes in the same rank
    */
@@ -71,7 +71,7 @@ let defaults = {
    * Automatically adds edge class '.useDagreEdgeControlPoints' to all edges and configure it with this.dagreEdgeStyle.
    * If set to `false` and `useDagreEdgeControlPoints` is `true` then apply `this.dagreEdgeStyle` yourself.
    */
-  automaticDagreEdgeStyle: this.useDagreEdgeControlPoints,
+  automaticDagreEdgeStyle: false,
   /**
    * Defines the style for rendering dagre edge control points stored by the layout algorithm
    * if `useDagreEdgeControlPoints` is `true` and `automaticDagreEdgeStyle` is `true`
@@ -90,7 +90,7 @@ let defaults = {
   /**
    * Whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions
    */
-  animateFilter: function( _node, i ){ return true; }, 
+  animateFilter: function( _node, _i ){ return true; }, 
   /**
    * Duration of animation in ms if enabled
    */
@@ -125,4 +125,4 @@ let defaults = {
   stop: function(){}, 
 };
 
-module.exports = defaults;
+export default defaults;
