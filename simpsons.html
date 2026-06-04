@@ -7,12 +7,11 @@
 
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
 
-    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.umd.js"></script>
 
     <!-- for testing with local version of cytoscape.js -->
     <!--<script src="../cytoscape.js/build/cytoscape.js"></script>-->
 
-    <script src="https://unpkg.com/dagre@0.7.4/dist/dagre.js"></script>
     <script src="cytoscape-dagre.js"></script>
 
     <style>
@@ -38,6 +37,35 @@
 
     <script>
       window.addEventListener('DOMContentLoaded', function(){
+        const cytoscapeNodeShapes = [
+            'rectangle',
+            'round-rectangle',
+            'cut-rectangle',
+            'bottom-round-rectangle',
+            'barrel',
+            'ellipse',
+            'triangle',
+            'round-triangle',
+            'square',
+            'pentagon',
+            'hexagon',
+            'concave-hexagon',
+            'heptagon',
+            'octagon',
+            'star',
+            'diamond',
+            'vee',
+            'rhomboid',
+            'tag',
+            'round-tag'
+        ];
+
+        /**
+         * the edge layout is sensitive to node shapes, so we want to test in many different situations
+         */
+        function randomShape() {
+            return cytoscapeNodeShapes[Math.floor(Math.random() * cytoscapeNodeShapes.length)];
+        }
 
         var cy = window.cy = cytoscape({
             container: document.getElementById('cy'),
@@ -46,15 +74,16 @@
                 "animate": false,
                 "name": "dagre",
                 "useDagreEdgeControlPoints": true,
+                "automaticDagreEdgeStyle" : true,
                 "spacingFactor": 1,
-                "ranker": "network-simplex",
-                "debugDagreEdgeControlPoints": true
+                "rankSep" :75,
+                "ranker": "network-simplex"
             },
             "style": [
                 {   
                     "selector": "node",
                     "style": {
-                        "shape": "circle",
+                        "shape": "data(shape)",
                         "color": "white",
                         "background-color": "blue",
                         "width": "label",
@@ -72,7 +101,7 @@
                     "selector": "edge",
                     "style": {
                         "target-arrow-shape": "triangle",
-                        "width": 3,
+                        "width": 10,
                         "line-color": "black",
                         "source-arrow-color": "black",
                         "curve-style": "unbundled-bezier",
@@ -91,67 +120,78 @@
                 {
                     "data": {
                         "id": "Lisa Simpson",
-                        "label": "Lisa Simpson"
+                        "label": "Lisa Simpson",
+                        "shape" : randomShape()
                     }
                 },
                 {
                     "data": {
                         "id": "Maggie Simpson",
-                        "label": "Maggie Simpson"
+                        "label": "Maggie Simpson",
+                        "shape" : randomShape()
                     }
                 },
                 {
                     "data": {
                         "id": "Homer Simpson",
-                        "label": "Homer Simpson"
+                        "label": "Homer Simpson",
+                        "shape" : randomShape()
                     }
                 },
                 {
                     "data": {
                         "id": "Patty Bouvier",
-                        "label": "Patty Bouvier"
+                        "label": "Patty Bouvier",
+                        "shape" : randomShape()
                     }
                 },
                 {
                     "data": {
                         "id": "Marge Simpson",
-                        "label": "Marge Simpson"
+                        "label": "Marge Simpson",
+                        "shape" : randomShape()
                     }
                 },
                 {
                     "data": {
                         "id": "Selma Bouvier",
-                        "label": "Selma Bouvier"
+                        "label": "Selma Bouvier",
+                        "shape" : randomShape()
                     }
                 },
                 {
                     "data": {
                         "id": "Abraham Simpson",
-                        "label": "Abraham Simpson"
+                        "label": "Abraham Simpson",
+                        "shape" : randomShape()
                     }
                 },
                 {
                     "data": {
                         "id": "Mona Simpson",
-                        "label": "Mona Simpson"
+                        "label": "Mona Simpson",
+                        "shape" : randomShape()
                     }
                 },
                 {
                     "data": {
                         "id": "Rod Flanders",
-                        "label": "Rod Flanders"
+                        "label": "Rod Flanders",
+                        "shape" : randomShape()
                     }
                 },
                 {
                     "data": {
                         "id": "Bart Simpson",
-                        "label": "Bart Simpson"
+                        "label": "Bart Simpson",
+                        "shape" : randomShape()
                     }
                 },
                 {
                     "data": {
                         "id": "Todd Flanders",
-                        "label": "Todd Flanders"
+                        "label": "Todd Flanders",
+                        "shape" : randomShape()
                     }
                 }
             ],
@@ -249,9 +289,6 @@
             ]
         }    
         });
-  
-        addDagreEdgeClass(cy);
-        registerDagreEdgeStyle(cy);
       });
     </script>
   </head>
@@ -264,5 +301,3 @@
   </body>
 
 </html>
-
-
