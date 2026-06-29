@@ -1,6 +1,6 @@
 // Simple, internal Object.assign() polyfill for options objects etc.
 
-const assign = Object.assign != null ? Object.assign.bind( Object ) : function( tgt, ...srcs ){
+const assign: (target: any, ...sources: any[]) => any = Object.assign != null ? Object.assign.bind( Object ) : function( tgt: any, ...srcs: any[] ){
   srcs.forEach( src => {
     Object.keys( src ).forEach( k => tgt[k] = src[k] );
   } );

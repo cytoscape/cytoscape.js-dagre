@@ -13,7 +13,7 @@ const banner = `/*!
  * License: ${pkg.license}
  */`;
 
-const extensions = [ '.mjs', '.js' ];
+const extensions = [ '.ts', '.mjs', '.js' ];
 const plugins = [
   nodeResolve({
     browser: true,
@@ -49,7 +49,7 @@ const minify = terser({
 
 export default [
   {
-    input: 'src/index.mjs',
+    input: 'src/index.ts',
     plugins,
     output: {
       ...umdOutput,
@@ -57,7 +57,7 @@ export default [
     }
   },
   {
-    input: 'src/index.mjs',
+    input: 'src/index.ts',
     plugins: [ ...plugins, minify ],
     output: {
       ...umdOutput,
@@ -65,7 +65,7 @@ export default [
     }
   },
   {
-    input: 'src/index.mjs',
+    input: 'src/index.ts',
     plugins,
     output: {
       ...esmOutput,
@@ -73,7 +73,7 @@ export default [
     }
   },
   {
-    input: 'src/index.mjs',
+    input: 'src/index.ts',
     plugins: [ ...plugins, minify ],
     output: {
       ...esmOutput,

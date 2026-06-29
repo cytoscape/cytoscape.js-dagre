@@ -1,6 +1,6 @@
 import cytoscape from 'cytoscape';
 import chai from 'chai';
-import register from '../src/index.mjs';
+import register from '../src/index.ts';
 
 const { expect } = chai;
 
