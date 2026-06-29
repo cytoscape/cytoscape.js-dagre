@@ -2,10 +2,13 @@ import defaults from './defaults.ts';
 import assign from './assign.ts';
 import dagre from '@dagrejs/dagre';
 
-type DagreLayoutOptions = import('../index').DagreLayoutOptions;
+// `defaults` is the source of truth for the recognised option shape. The
+// public `DagreLayoutOptions` type lives in the root `index.ts` (it is the
+// generated `index.d.ts`); src/ stays self-contained so it type-checks alone.
+type LayoutOptions = typeof defaults;
 
 // the layout options merged with the runtime values cytoscape injects (cy, eles, ...)
-type RunOptions = DagreLayoutOptions & { [key: string]: any };
+type RunOptions = LayoutOptions & { cy?: any; eles?: any; name?: string; [key: string]: any };
 
 interface Point { x: number; y: number; }
 interface EdgeCoord { weight: number; distance: number; }
@@ -109,7 +112,7 @@ function dagreEdgeToCytoscapeEdge( dEdge: any, cEdge: any ): { controlPointWeigh
 // options : object containing layout options
 // NB: this must stay a function constructor (not an ES `class`); cytoscape
 // invokes registered layouts without `new`, which throws for class constructors.
-function DagreLayout( this: any, options: DagreLayoutOptions ) {
+function DagreLayout( this: any, options: Partial<RunOptions> ) {
   this.options = assign( {}, defaults, options ) as RunOptions;
 }
 

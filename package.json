@@ -27,6 +27,7 @@
     "postpublish": "run-s gh-pages",
     "gh-pages": "gh-pages -d pages",
     "copyright": "update license",
+    "prepublishOnly": "run-s build",
     "lint": "eslint src --ext .ts",
     "check": "tsc --noEmit -p tsconfig.json",
     "build:types": "tsc -p tsconfig.types.json",
