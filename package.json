@@ -36,7 +36,7 @@
     "build:min": "rolldown -c rolldown.config.mjs",
     "build:release": "run-s build build:min copyright",
     "watch": "rolldown -c rolldown.config.mjs --watch",
-    "test": "run-s build test:mocha",
+    "test": "run-s check lint build test:mocha",
     "test:mocha": "mocha \"test/**/*.test.mjs\""
   },
   "repository": {
