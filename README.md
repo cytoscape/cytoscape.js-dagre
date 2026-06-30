@@ -120,13 +120,13 @@ copy the fields of `dagreEdgeStyle` exactly.
 
 * `npm run test` : Run Mocha tests in `./test`
 * `npm run build` : Build `./src/**` into UMD and ESM files in `dist/` (`build:js`) and regenerate the root `index.d.ts` from the TypeScript source (`build:types`)
-* `npm run build:js` : Build only the Rollup bundles in `dist/`
+* `npm run build:js` : Build only the Rolldown bundles in `dist/`
 * `npm run build:types` : Regenerate `index.d.ts` from `index.ts` via `tsc`
-* `npm run watch` : Automatically rebuild Rollup outputs on changes
+* `npm run watch` : Automatically rebuild Rolldown outputs on changes
 * `npm run lint` : Run eslint on the TypeScript source
 * `npm run check` : Type-check the project with `tsc --noEmit`
 
-The extension is written in TypeScript (`./src/**.ts`). The Rollup bundles are produced with babel, so modern ES features can be used in the `src`. The published type definitions (`index.d.ts`) are **generated** from the TypeScript source (`index.ts`) — edit `index.ts`, not `index.d.ts`, and run `npm run build:types`.
+The extension is written in TypeScript (`./src/**.ts`). The bundles are produced with [Rolldown](https://rolldown.rs) (configured in `rolldown.config.mjs`), which handles TypeScript, CommonJS interop and minification natively; outputs are down-levelled to ES2015. The published type definitions (`index.d.ts`) are **generated** from the TypeScript source (`index.ts`) — edit `index.ts`, not `index.d.ts`, and run `npm run build:types`.
 
 N.b. running the source tests and the build requires Node ≥ 24 (see `.nvmrc`); the published bundles themselves run anywhere.
 
