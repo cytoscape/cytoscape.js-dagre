@@ -1,8 +1,7 @@
 import cytoscape from 'cytoscape';
-import chai from 'chai';
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
 import register from '../src/index.ts';
-
-const { expect } = chai;
 
 register( cytoscape );
 
@@ -17,10 +16,10 @@ function createCy( elements, options = {} ){
 function expectFinitePosition( node ){
   let position = node.position();
 
-  expect( position.x ).to.be.a( 'number' );
-  expect( position.y ).to.be.a( 'number' );
-  expect( Number.isFinite( position.x ) ).to.equal( true );
-  expect( Number.isFinite( position.y ) ).to.equal( true );
+  assert.equal( typeof position.x, 'number' );
+  assert.equal( typeof position.y, 'number' );
+  assert.equal( Number.isFinite( position.x ), true );
+  assert.equal( Number.isFinite( position.y ), true );
 }
 
 describe('source dagre layout', function(){
@@ -40,7 +39,7 @@ describe('source dagre layout', function(){
     cy.layout({ name: 'dagre' }).run();
 
     cy.nodes().forEach(function( node ){
-      expect( node.scratch().dagre ).to.exist;
+      assert.ok( node.scratch().dagre );
       expectFinitePosition( node );
     });
 
@@ -50,11 +49,11 @@ describe('source dagre layout', function(){
     let n3 = cy.getElementById('n3').position();
     let n4 = cy.getElementById('n4').position();
 
-    expect( n0.y ).to.be.below( n1.y );
-    expect( n1.y ).to.be.below( n2.y );
-    expect( n1.y ).to.be.below( n3.y );
-    expect( n3.y ).to.be.below( n4.y );
-    expect( n2.x ).to.not.equal( n3.x );
+    assert.ok( n0.y < n1.y );
+    assert.ok( n1.y < n2.y );
+    assert.ok( n1.y < n3.y );
+    assert.ok( n3.y < n4.y );
+    assert.notEqual( n2.x, n3.x );
   });
 
   it('honours directional layout options', function(){
@@ -66,7 +65,7 @@ describe('source dagre layout', function(){
 
     cy.layout({ name: 'dagre', rankDir: 'LR' }).run();
 
-    expect( cy.getElementById( 'a' ).position().x ).to.be.below( cy.getElementById( 'b' ).position().x );
+    assert.ok( cy.getElementById( 'a' ).position().x < cy.getElementById( 'b' ).position().x );
   });
 
   it('applies Cytoscape transform callbacks to final positions', function(){
@@ -84,8 +83,8 @@ describe('source dagre layout', function(){
     }).run();
 
     cy.nodes().forEach(function( node ){
-      expect( node.position().x ).to.be.at.least( 100 );
-      expect( node.position().y ).to.be.at.least( 200 );
+      assert.ok( node.position().x >= 100 );
+      assert.ok( node.position().y >= 200 );
     });
   });
 
@@ -103,19 +102,19 @@ describe('source dagre layout', function(){
     cy.layout({
       name: 'dagre',
       minLen: function( edge ){
-        expect( edge.isEdge() ).to.equal( true );
+        assert.equal( edge.isEdge(), true );
         minLenCalls++;
         return 1;
       },
       edgeWeight: function( edge ){
-        expect( edge.isEdge() ).to.equal( true );
+        assert.equal( edge.isEdge(), true );
         edgeWeightCalls++;
         return 1;
       }
     }).run();
 
-    expect( minLenCalls ).to.equal( 2 );
-    expect( edgeWeightCalls ).to.equal( 2 );
+    assert.equal( minLenCalls, 2 );
+    assert.equal( edgeWeightCalls, 2 );
   });
 
   it('lays out compound children relative to parents', function(){
@@ -131,8 +130,8 @@ describe('source dagre layout', function(){
     expectFinitePosition( cy.getElementById( 'p' ) );
     expectFinitePosition( cy.getElementById( 'a' ) );
     expectFinitePosition( cy.getElementById( 'b' ) );
-    expect( cy.getElementById( 'a' ).parent().id() ).to.equal( 'p' );
-    expect( cy.getElementById( 'b' ).parent().id() ).to.equal( 'p' );
+    assert.equal( cy.getElementById( 'a' ).parent().id(), 'p' );
+    assert.equal( cy.getElementById( 'b' ).parent().id(), 'p' );
   });
 
   it('completes disconnected component layouts', function(){
@@ -143,9 +142,9 @@ describe('source dagre layout', function(){
       { data: { id: 'ab', source: 'a', target: 'b' } }
     ]);
 
-    expect(function(){
+    assert.doesNotThrow(function(){
       cy.layout({ name: 'dagre' }).run();
-    }).to.not.throw();
+    });
 
     cy.nodes().forEach( expectFinitePosition );
   });
@@ -165,8 +164,8 @@ describe('source dagre layout', function(){
     }).run();
 
     cy.nodes().forEach(function( node ){
-      expect( node.position().x ).to.be.within( 100, 400 );
-      expect( node.position().y ).to.be.within( 200, 600 );
+      assert.ok( node.position().x >= 100 && node.position().x <= 400 );
+      assert.ok( node.position().y >= 200 && node.position().y <= 600 );
     });
   });
 
@@ -188,7 +187,7 @@ describe('source dagre layout', function(){
       }
     }).run();
 
-    expect( [...comparedKinds] ).to.have.members([ 'node', 'edge' ]);
+    assert.deepEqual( [...comparedKinds].sort(), [ 'edge', 'node' ] );
   });
 
   it('filters edges connected to compound parents before invoking edge options', function(){
@@ -209,7 +208,7 @@ describe('source dagre layout', function(){
       }
     }).run();
 
-    expect( visitedEdges ).to.deep.equal([ 'child-edge' ]);
+    assert.deepEqual( visitedEdges, [ 'child-edge' ] );
   });
 
   it('stores and automatically styles Dagre edge control points', function(){
@@ -226,10 +225,12 @@ describe('source dagre layout', function(){
     }).run();
 
     let edge = cy.getElementById( 'ab' );
-    expect( edge.hasClass( 'useDagreEdgeControlPoints' ) ).to.equal( true );
-    expect( edge.scratch( 'controlPointWeights' ) ).to.be.an( 'array' ).that.is.not.empty;
-    expect( edge.scratch( 'controlPointDistances' ) ).to.be.an( 'array' ).that.is.not.empty;
-    expect( edge.style( 'curve-style' ) ).to.equal( 'unbundled-bezier' );
+    assert.equal( edge.hasClass( 'useDagreEdgeControlPoints' ), true );
+    assert.ok( Array.isArray( edge.scratch( 'controlPointWeights' ) ) );
+    assert.ok( edge.scratch( 'controlPointWeights' ).length > 0 );
+    assert.ok( Array.isArray( edge.scratch( 'controlPointDistances' ) ) );
+    assert.ok( edge.scratch( 'controlPointDistances' ).length > 0 );
+    assert.equal( edge.style( 'curve-style' ), 'unbundled-bezier' );
     cy.destroy();
   });
 });

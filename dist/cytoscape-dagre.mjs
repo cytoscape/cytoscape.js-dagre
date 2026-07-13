@@ -137,7 +137,7 @@ const defaults = {
 	stop: function() {}
 };
 //#endregion
-//#region \0@oxc-project+runtime@0.137.0/helpers/esm/typeof.js
+//#region \0@oxc-project+runtime@0.139.0/helpers/esm/typeof.js
 function _typeof(o) {
 	"@babel/helpers - typeof";
 	return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
@@ -147,7 +147,7 @@ function _typeof(o) {
 	}, _typeof(o);
 }
 //#endregion
-//#region \0@oxc-project+runtime@0.137.0/helpers/esm/toPrimitive.js
+//#region \0@oxc-project+runtime@0.139.0/helpers/esm/toPrimitive.js
 function toPrimitive(t, r) {
 	if ("object" != _typeof(t) || !t) return t;
 	var e = t[Symbol.toPrimitive];
@@ -159,13 +159,13 @@ function toPrimitive(t, r) {
 	return ("string" === r ? String : Number)(t);
 }
 //#endregion
-//#region \0@oxc-project+runtime@0.137.0/helpers/esm/toPropertyKey.js
+//#region \0@oxc-project+runtime@0.139.0/helpers/esm/toPropertyKey.js
 function toPropertyKey(t) {
 	var i = toPrimitive(t, "string");
 	return "symbol" == _typeof(i) ? i : i + "";
 }
 //#endregion
-//#region \0@oxc-project+runtime@0.137.0/helpers/esm/defineProperty.js
+//#region \0@oxc-project+runtime@0.139.0/helpers/esm/defineProperty.js
 function _defineProperty(e, r, t) {
 	return (r = toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
 		value: t,
@@ -175,7 +175,7 @@ function _defineProperty(e, r, t) {
 	}) : e[r] = t, e;
 }
 //#endregion
-//#region \0@oxc-project+runtime@0.137.0/helpers/esm/objectSpread2.js
+//#region \0@oxc-project+runtime@0.139.0/helpers/esm/objectSpread2.js
 function ownKeys(e, r) {
 	var t = Object.keys(e);
 	if (Object.getOwnPropertySymbols) {
@@ -220,12 +220,14 @@ fn(z, {
 	json: () => ye,
 	version: () => pn
 });
-var bn = Object.defineProperty, Le = (e, n) => {
+var bn = Object.defineProperty;
+var Le = (e, n) => {
 	for (var t in n) bn(e, t, {
 		get: n[t],
 		enumerable: !0
 	});
-}, p = class {
+};
+var p = class {
 	constructor(e) {
 		this._isDirected = !0, this._isMultigraph = !1, this._isCompound = !1, this._nodes = {}, this._in = {}, this._preds = {}, this._out = {}, this._sucs = {}, this._edgeObjs = {}, this._edgeLabels = {}, this._nodeCount = 0, this._edgeCount = 0, this._defaultNodeLabelFn = () => {}, this._defaultEdgeLabelFn = () => {}, e && (this._isDirected = "directed" in e ? e.directed : !0, this._isMultigraph = "multigraph" in e ? e.multigraph : !1, this._isCompound = "compound" in e ? e.compound : !1), this._isCompound && (this._parent = {}, this._children = {}, this._children["\0"] = {});
 	}
@@ -433,7 +435,8 @@ function gn(e, n, t, r) {
 function Y(e, n) {
 	return C(e, n.v, n.w, n.name);
 }
-var pn = "4.0.1", ye = {};
+var pn = "4.0.1";
+var ye = {};
 Le(ye, {
 	read: () => yn,
 	write: () => mn
@@ -510,17 +513,18 @@ function Nn(e, n, t, r) {
 	}, l = function() {
 		a.forEach(function(c) {
 			r(c).forEach(function(h) {
-				let f = h.v === c ? h.v : h.w;
+				let f = h.v === c ? h.v : h.w, g = f === h.v ? h.w : h.v;
 				d({
 					v: f,
-					w: f === h.v ? h.w : h.v
+					w: g
 				});
 			});
 		});
 	};
 	a.forEach(function(c) {
+		let h = c === n ? 0 : Number.POSITIVE_INFINITY;
 		o[c] = {
-			distance: c === n ? 0 : Number.POSITIVE_INFINITY,
+			distance: h,
 			predecessor: ""
 		};
 	});
@@ -594,7 +598,8 @@ var Ne = class {
 		let t = this._arr, r = this._keyIndices, o = t[e], i = t[n];
 		t[e] = i, t[n] = o, r[i.key] = e, r[o.key] = n;
 	}
-}, kn = () => 1;
+};
+var kn = () => 1;
 function F(e, n, t, r) {
 	let o = function(i) {
 		return e.outEdges(i);
@@ -1363,7 +1368,8 @@ function re(e) {
 	function s(d) {
 		if (n[d]) return;
 		n[d] = !0;
-		i[e.node(d).rank].push(d);
+		let l = e.node(d);
+		i[l.rank].push(d);
 		let u = e.successors(d);
 		u && u.forEach(s);
 	}
@@ -1863,39 +1869,46 @@ var Vt = [
 	"ranksep",
 	"marginx",
 	"marginy"
-], Wt = {
+];
+var Wt = {
 	ranksep: 50,
 	edgesep: 20,
 	nodesep: 50,
 	rankdir: "TB",
 	rankalign: "center"
-}, Bt = [
+};
+var Bt = [
 	"acyclicer",
 	"ranker",
 	"rankdir",
 	"align",
 	"rankalign"
-], Yt = [
+];
+var Yt = [
 	"width",
 	"height",
 	"rank"
-], cn = {
+];
+var cn = {
 	width: 0,
 	height: 0
-}, zt = [
+};
+var zt = [
 	"minlen",
 	"weight",
 	"width",
 	"height",
 	"labeloffset"
-], Ht = {
+];
+var Ht = {
 	minlen: 1,
 	weight: 1,
 	width: 0,
 	height: 0,
 	labeloffset: 10,
 	labelpos: "r"
-}, qt = ["labelpos"];
+};
+var qt = ["labelpos"];
 function Xt(e) {
 	let n = new p({
 		multigraph: !0,

@@ -96,8 +96,8 @@ Recommended compiler settings:
 {
   "compilerOptions": {
     "target": "ES2019",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "Node16",
+    "moduleResolution": "Node16",
     "lib": ["ES2019", "DOM"],
     "strict": true,
     "esModuleInterop": true,
@@ -111,6 +111,8 @@ Recommended compiler settings:
 ```
 
 The bundler, rather than `tsc`, should emit JavaScript. The primary TypeScript configuration only type-checks the source.
+
+For Node 24-based extension development, use the current TypeScript 7 release with `module` and `moduleResolution` set to `Node16` or newer. Oxlint avoids coupling the compiler upgrade to typescript-eslint's supported TypeScript peer range.
 
 ### Runtime typing
 
@@ -127,7 +129,7 @@ Type the implementation using:
 
 Keep a function-style layout constructor when required by Cytoscape's extension registration behavior. Do not replace it with an ES class without verifying runtime compatibility.
 
-Avoid broad `any` types. When upstream declarations are incomplete, isolate the mismatch behind a small typed adapter or an `unknown` cast. Configure ESLint to reject new explicit `any` usage.
+Avoid broad `any` types. When upstream declarations are incomplete, isolate the mismatch behind a small typed adapter or an `unknown` cast. Configure the linter to reject new explicit `any` usage.
 
 ## Public TypeScript API
 
@@ -139,8 +141,8 @@ A separate declaration configuration can use:
 {
   "compilerOptions": {
     "target": "ES2019",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "Node16",
+    "moduleResolution": "Node16",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -268,19 +270,25 @@ A canonical script arrangement is:
 ```json
 {
   "scripts": {
-    "lint": "eslint src --ext .ts",
+    "lint": "oxlint src",
+    "copyright": "node uplic.mjs",
     "check": "tsc --noEmit -p tsconfig.json",
     "build:types": "tsc -p tsconfig.types.json",
     "build:js": "rolldown -c rolldown.config.mjs",
-    "build": "run-s build:js build:types",
+    "build": "npm run build:js && npm run build:types",
+    "build:release": "npm run copyright && npm run build",
     "watch": "rolldown -c rolldown.config.mjs --watch",
     "test:types": "tsc --noEmit -p test/types/tsconfig.json",
-    "test:mocha": "mocha \"test/**/*.test.mjs\"",
+    "test:node": "node --test test/*.test.mjs",
     "verify:generated": "git diff --exit-code -- dist index.d.ts",
-    "test": "run-s check lint build test:types test:mocha verify:generated"
+    "test": "npm run check && npm run lint && npm run build && npm run test:types && npm run test:node && npm run verify:generated"
   }
 }
 ```
+
+Use Oxlint with a checked-in `.oxlintrc.json`. Enable its TypeScript rules, including `typescript/no-explicit-any`, so linting does not constrain the supported TypeScript compiler version through typescript-eslint peer dependencies.
+
+Use a small dependency-free `uplic.mjs`, following the approach in the main Cytoscape repository, to regenerate the standard MIT license with `new Date().getFullYear()`. Avoid obsolete license-updater packages with large, unmaintained dependency trees.
 
 If readable and minified builds use separate commands, ensure the release workflow invokes both.
 
@@ -313,7 +321,7 @@ Use `@ts-expect-error` for intentional negative cases so the test fails if an in
 
 ## Runtime and Artifact Tests
 
-Keep generated-artifact tests separate from source-level layout tests:
+Use Node's built-in test runner and strict assertion library, keeping generated-artifact tests separate from source-level layout tests:
 
 - `test/build-artifacts.test.mjs`
 - `test/source-layout.test.mjs`
@@ -351,7 +359,7 @@ Cover:
 
 Prefer relative ordering and finite-position assertions over exact coordinates.
 
-When enabling Cytoscape styles in headless tests, destroy the Cytoscape instance after the test so style-related handles do not keep Mocha running.
+When enabling Cytoscape styles in headless tests, destroy the Cytoscape instance after the test so style-related handles do not keep the Node test process running.
 
 ## Continuous Integration
 

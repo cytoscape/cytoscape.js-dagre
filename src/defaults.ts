@@ -1,5 +1,5 @@
 import type cytoscape from 'cytoscape';
-import type cytoscapeDagre from '../index';
+import type cytoscapeDagre from '../index.js';
 
 export type LayoutDefaults = Omit<cytoscapeDagre.DagreLayoutOptions, 'name'>;
 type RequiredRuntimeDefaults = LayoutDefaults & {
