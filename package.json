@@ -36,8 +36,10 @@
     "build:min": "rolldown -c rolldown.config.mjs",
     "build:release": "run-s build build:min copyright",
     "watch": "rolldown -c rolldown.config.mjs --watch",
-    "test": "run-s check lint build test:mocha",
-    "test:mocha": "mocha \"test/**/*.test.mjs\""
+    "test": "run-s check lint build test:types test:mocha verify:generated",
+    "test:mocha": "mocha \"test/**/*.test.mjs\"",
+    "test:types": "tsc --noEmit -p test/types/tsconfig.json",
+    "verify:generated": "git diff --exit-code -- dist index.d.ts"
   },
   "repository": {
     "type": "git",

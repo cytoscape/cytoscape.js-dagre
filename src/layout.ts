@@ -1,21 +1,66 @@
 import defaults from './defaults.ts';
-import assign from './assign.ts';
-import dagre from '@dagrejs/dagre';
-
-// `defaults` is the source of truth for the recognised option shape. The
-// public `DagreLayoutOptions` type lives in the root `index.ts` (it is the
-// generated `index.d.ts`); src/ stays self-contained so it type-checks alone.
-type LayoutOptions = typeof defaults;
+import type { LayoutDefaults } from './defaults.ts';
+import dagre, { type EdgeLabel, type GraphLabel, type NodeLabel } from '@dagrejs/dagre';
+import type cytoscape from 'cytoscape';
 
 // the layout options merged with the runtime values cytoscape injects (cy, eles, ...)
-type RunOptions = LayoutOptions & { cy?: any; eles?: any; name?: string; [key: string]: any };
+type RunOptions = LayoutDefaults & {
+  cy: cytoscape.Core;
+  eles: cytoscape.CollectionArgument;
+  name?: 'dagre';
+};
 
 interface Point { x: number; y: number; }
 interface EdgeCoord { weight: number; distance: number; }
 interface EdgeFrame { src: Point; tgt: Point; dir: Point; normal: Point; len: number; }
+interface CompleteBoundingBox extends cytoscape.BoundingBox12, cytoscape.BoundingBoxWH {}
+interface DagreScratch {
+  dagre?: NodeLabel;
+  controlPointWeights?: number[];
+  controlPointDistances?: number[];
+}
+interface DagreLayoutInstance {
+  options: RunOptions;
+  run(): DagreLayoutInstance;
+}
+interface LayoutPositionCollection {
+  layoutPositions(
+    layout: DagreLayoutInstance,
+    options: RunOptions,
+    handler: (element: cytoscape.NodeSingular) => cytoscape.Position
+  ): void;
+}
 
-const isFunction = function( o: any ): o is ( ...args: any[] ) => any { return typeof o === 'function'; };
+const isFunction = function<TArgs extends unknown[], TResult>(
+  value: TResult | ((...args: TArgs) => TResult)
+): value is (...args: TArgs) => TResult {
+  return typeof value === 'function';
+};
 const EPSILON = 0.001; // what does it mean to be too close to 0?
+
+function getScratch( element: cytoscape.SingularElementArgument ): DagreScratch {
+  return element.scratch() as DagreScratch;
+}
+
+function hasPosition( node: NodeLabel ): node is NodeLabel & Point {
+  return typeof node.x === 'number' && typeof node.y === 'number';
+}
+
+function completeBoundingBox(
+  boundingBox: cytoscape.BoundingBox12 | cytoscape.BoundingBoxWH
+): CompleteBoundingBox {
+  const x2 = 'x2' in boundingBox ? boundingBox.x2 : boundingBox.x1 + boundingBox.w;
+  const y2 = 'y2' in boundingBox ? boundingBox.y2 : boundingBox.y1 + boundingBox.h;
+
+  return {
+    x1: boundingBox.x1,
+    y1: boundingBox.y1,
+    x2,
+    y2,
+    w: 'w' in boundingBox ? boundingBox.w : x2 - boundingBox.x1,
+    h: 'h' in boundingBox ? boundingBox.h : y2 - boundingBox.y1
+  };
+}
 
 function subtract( a: Point, b: Point ): Point {
   return { x: noZero(a.x - b.x), y: noZero(a.y - b.y) };
@@ -94,11 +139,14 @@ function normalizeWeight( coords: EdgeCoord[] ): EdgeCoord[] {
  * These final coordinates are stored pairwise in two arrays cpw and cpd
  * which are picked up by the Bezier construction code in cytoscape.
  */
-function dagreEdgeToCytoscapeEdge( dEdge: any, cEdge: any ): { controlPointWeights: number[]; controlPointDistances: number[] } {
+function dagreEdgeToCytoscapeEdge(
+  dEdge: EdgeLabel,
+  cEdge: cytoscape.EdgeSingular
+): { controlPointWeights: number[]; controlPointDistances: number[] } {
   const fromNode = cEdge.source().position();
   const toNode = cEdge.target().position();
   const frame = buildEdgeFrame(fromNode, toNode);
-  const coords = normalizeWeight(dEdge.points.map(( p: Point ) => toEdgeCoordinates(p, frame)));
+  const coords = normalizeWeight((dEdge.points ?? []).map(p => toEdgeCoordinates(p, frame)));
 
   const controlPointWeights = coords.slice(1,-1).map(c => c.weight);
   const controlPointDistances = coords.slice(1,-1).map(c => c.distance);
@@ -112,35 +160,31 @@ function dagreEdgeToCytoscapeEdge( dEdge: any, cEdge: any ): { controlPointWeigh
 // options : object containing layout options
 // NB: this must stay a function constructor (not an ES `class`); cytoscape
 // invokes registered layouts without `new`, which throws for class constructors.
-function DagreLayout( this: any, options: Partial<RunOptions> ) {
-  this.options = assign( {}, defaults, options ) as RunOptions;
+function DagreLayout( this: DagreLayoutInstance, options: RunOptions ) {
+  this.options = Object.assign( {}, defaults, options );
 }
 
 // runs the layout
-DagreLayout.prototype.run = function( this: any ){
-    let options = this.options as RunOptions;
-    let layout = this;
+DagreLayout.prototype.run = function( this: DagreLayoutInstance ){
+    const options = this.options;
+    const layout = this;
 
-    let cy = options.cy; // cy is automatically populated for us in the constructor
-    let eles = options.eles;
+    const cy = options.cy; // cy is automatically populated for us in the constructor
+    const eles = options.eles;
 
-    let getVal = function( ele: any, val: any ){
-      return isFunction(val) ? val.apply( ele, [ ele ] ) : val;
+    const getVal = function( ele: cytoscape.EdgeSingular, val: number | ((edge: cytoscape.EdgeSingular) => number) ){
+      return isFunction(val) ? val.call( ele, ele ) : val;
     };
 
-    let bb: any = options.boundingBox || { x1: 0, y1: 0, w: cy.width(), h: cy.height() };
-    if( bb.x2 === undefined ){ bb.x2 = bb.x1 + bb.w; }
-    if( bb.w === undefined ){ bb.w = bb.x2 - bb.x1; }
-    if( bb.y2 === undefined ){ bb.y2 = bb.y1 + bb.h; }
-    if( bb.h === undefined ){ bb.h = bb.y2 - bb.y1; }
+    const bb = completeBoundingBox(options.boundingBox ?? { x1: 0, y1: 0, w: cy.width(), h: cy.height() });
 
-    let g = new dagre.graphlib.Graph({
+    const g = new dagre.graphlib.Graph<GraphLabel, NodeLabel, EdgeLabel>({
       multigraph: true,
       compound: true
     });
 
-    let gObj: Record<string, any> = {};
-    let setGObj = function( name: string, val: any ){
+    const gObj: GraphLabel = {};
+    const setGObj = function<K extends keyof GraphLabel>( name: K, val: GraphLabel[K] ){
       if( val != null ){
         gObj[ name ] = val;
       }
@@ -155,9 +199,6 @@ DagreLayout.prototype.run = function( this: any ){
     setGObj( 'acyclicer', options.acyclicer);
 
     g.setGraph( gObj );
-
-    g.setDefaultEdgeLabel(function() { return {}; });
-    g.setDefaultNodeLabel(function() { return {}; });
 
     // add nodes to dagre
     let nodes = eles.nodes();
@@ -183,12 +224,15 @@ DagreLayout.prototype.run = function( this: any ){
       let node = nodes[i];
 
       if( node.isChild() ){
-        g.setParent( node.id(), node.parent().id() );
+        const parent = node.parent()[0];
+        if( parent ){
+          g.setParent( node.id(), parent.id() );
+        }
       }
     }
 
     // add edges to dagre
-    let edges = eles.edges().stdFilter(function( edge: any ){
+    let edges = eles.edges().filter(function( edge: cytoscape.EdgeSingular ){
       return !edge.source().isParent() && !edge.target().isParent(); // dagre can't handle edges on compound nodes
     });
 
@@ -200,8 +244,8 @@ DagreLayout.prototype.run = function( this: any ){
       let edge = edges[i];
 
       g.setEdge( edge.source().id(), edge.target().id(), {
-        minlen: getVal( edge, options.minLen ),
-        weight: getVal( edge, options.edgeWeight ),
+        minlen: getVal( edge, options.minLen ?? defaults.minLen ),
+        weight: getVal( edge, options.edgeWeight ?? defaults.edgeWeight ),
         name: edge.id()
       }, edge.id() );
     }
@@ -213,15 +257,16 @@ DagreLayout.prototype.run = function( this: any ){
       let id = gNodeIds[i];
       let n = g.node( id );
 
-      cy.getElementById(id).scratch().dagre = n;
+      getScratch(cy.getElementById(id)).dagre = n;
     }
 
-    let dagreBB: any;
+    let dagreBB: CompleteBoundingBox;
 
     if( options.boundingBox ){
-      dagreBB = { x1: Infinity, x2: -Infinity, y1: Infinity, y2: -Infinity };
-      nodes.forEach(function( node: any ){
-        let dModel = node.scratch().dagre;
+      dagreBB = { x1: Infinity, x2: -Infinity, y1: Infinity, y2: -Infinity, w: 0, h: 0 };
+      nodes.forEach(function( node: cytoscape.NodeSingular ){
+        const dModel = getScratch(node).dagre;
+        if( !dModel || !hasPosition(dModel) ){ return; }
 
         dagreBB.x1 = Math.min( dagreBB.x1, dModel.x );
         dagreBB.x2 = Math.max( dagreBB.x2, dModel.x );
@@ -236,7 +281,7 @@ DagreLayout.prototype.run = function( this: any ){
       dagreBB = bb;
     }
 
-    let constrainPos = function( p: Point ){
+    const constrainPos = function( p: Point ){
       if( options.boundingBox ){
         let xPct = dagreBB.w === 0 ? 0 : (p.x - dagreBB.x1) / dagreBB.w;
         let yPct = dagreBB.h === 0 ? 0 : (p.y - dagreBB.y1) / dagreBB.h;
@@ -250,9 +295,11 @@ DagreLayout.prototype.run = function( this: any ){
       }
     };
 
-    nodes.layoutPositions(layout, options, function( this: any, ele: any ){
-      ele = typeof ele === "object" ? ele : this;
-      let dModel = ele.scratch().dagre;
+    (nodes as unknown as LayoutPositionCollection).layoutPositions(layout, options, function( ele ){
+      const dModel = getScratch(ele).dagre;
+      if( !dModel || !hasPosition(dModel) ){
+        return ele.position();
+      }
 
       return constrainPos({
         x: dModel.x,
@@ -265,16 +312,17 @@ DagreLayout.prototype.run = function( this: any ){
         cy.edges().addClass('useDagreEdgeControlPoints');
         cy.style()
           .selector('edge.useDagreEdgeControlPoints')
-          .style(options.dagreEdgeStyle)
+          .style(options.dagreEdgeStyle ?? defaults.dagreEdgeStyle)
           .update();
       }
 
-      g.edges().forEach(( id: any ) => {
+      g.edges().forEach(id => {
+        if( id.name === undefined ){ return; }
         const cyEdge = cy.getElementById(id.name);
         const dEdge = g.edge(id);
 
         if (dEdge && dEdge.points) {
-          cyEdge.scratch(dagreEdgeToCytoscapeEdge(dEdge, cyEdge));
+          Object.assign(getScratch(cyEdge), dagreEdgeToCytoscapeEdge(dEdge, cyEdge));
         }
       });
     }

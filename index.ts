@@ -10,7 +10,7 @@ declare namespace cytoscapeDagre {
   type DagreRanker = 'network-simplex' | 'tight-tree' | 'longest-path';
 
   interface DagreAlgorithmOptions {
-    [key: string]: any;
+    [key: string]: unknown;
   }
 
   interface DagreAlgorithm {
@@ -18,8 +18,8 @@ declare namespace cytoscapeDagre {
     graphlib?: DagreAlgorithmOptions;
   }
 
-  interface DagreEdgeStyle {
-    [key: string]: any;
+  interface DagreEdgeStyle extends cytoscape.Css.Edge {
+    'edge-ends-overlap'?: boolean | ((edge: cytoscape.EdgeSingular) => boolean);
   }
 
   interface DagreLayoutOptions extends cytoscape.BaseLayoutOptions, cytoscape.AnimatedLayoutOptions, cytoscape.LayoutDimensionOptions {
@@ -41,5 +41,19 @@ declare namespace cytoscapeDagre {
     useDagreEdgeControlPoints?: boolean;
     automaticDagreEdgeStyle?: boolean;
     dagreEdgeStyle?: DagreEdgeStyle;
+  }
+}
+
+declare module 'cytoscape' {
+  interface CoreLayout {
+    layout(options: cytoscapeDagre.DagreLayoutOptions): cytoscape.Layouts;
+    makeLayout(options: cytoscapeDagre.DagreLayoutOptions): cytoscape.Layouts;
+    createLayout(options: cytoscapeDagre.DagreLayoutOptions): cytoscape.Layouts;
+  }
+
+  interface CollectionLayout {
+    layout(options: cytoscapeDagre.DagreLayoutOptions): cytoscape.Layouts;
+    makeLayout(options: cytoscapeDagre.DagreLayoutOptions): cytoscape.Layouts;
+    createLayout(options: cytoscapeDagre.DagreLayoutOptions): cytoscape.Layouts;
   }
 }

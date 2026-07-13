@@ -25,16 +25,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
-        run: npm run lint
-
-      - name: Type-check
-        run: npm run check
-
-      - name: Run Mocha tests
+      - name: Verify types, lint, builds, and tests
         run: npm test
-
-      - name: Verify index.d.ts is in sync with the TS source
-        run: |
-          npm run build:types
-          git diff --exit-code -- index.d.ts

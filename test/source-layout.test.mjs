@@ -6,10 +6,11 @@ const { expect } = chai;
 
 register( cytoscape );
 
-function createCy( elements ){
+function createCy( elements, options = {} ){
   return cytoscape({
     headless: true,
-    elements
+    elements,
+    ...options
   });
 }
 
@@ -147,5 +148,88 @@ describe('source dagre layout', function(){
     }).to.not.throw();
 
     cy.nodes().forEach( expectFinitePosition );
+  });
+
+  it('constrains node positions to a width-height bounding box', function(){
+    let cy = createCy([
+      { data: { id: 'a' } },
+      { data: { id: 'b' } },
+      { data: { id: 'c' } },
+      { data: { id: 'ab', source: 'a', target: 'b' } },
+      { data: { id: 'bc', source: 'b', target: 'c' } }
+    ]);
+
+    cy.layout({
+      name: 'dagre',
+      boundingBox: { x1: 100, y1: 200, w: 300, h: 400 }
+    }).run();
+
+    cy.nodes().forEach(function( node ){
+      expect( node.position().x ).to.be.within( 100, 400 );
+      expect( node.position().y ).to.be.within( 200, 600 );
+    });
+  });
+
+  it('uses the sort callback for both nodes and edges', function(){
+    let comparedKinds = new Set();
+    let cy = createCy([
+      { data: { id: 'c' } },
+      { data: { id: 'b' } },
+      { data: { id: 'a' } },
+      { data: { id: 'bc', source: 'b', target: 'c' } },
+      { data: { id: 'ab', source: 'a', target: 'b' } }
+    ]);
+
+    cy.layout({
+      name: 'dagre',
+      sort: function( a, b ){
+        comparedKinds.add( a.isNode() ? 'node' : 'edge' );
+        return a.id().localeCompare( b.id() );
+      }
+    }).run();
+
+    expect( [...comparedKinds] ).to.have.members([ 'node', 'edge' ]);
+  });
+
+  it('filters edges connected to compound parents before invoking edge options', function(){
+    let visitedEdges = [];
+    let cy = createCy([
+      { data: { id: 'p' } },
+      { data: { id: 'a', parent: 'p' } },
+      { data: { id: 'b' } },
+      { data: { id: 'parent-edge', source: 'p', target: 'b' } },
+      { data: { id: 'child-edge', source: 'a', target: 'b' } }
+    ]);
+
+    cy.layout({
+      name: 'dagre',
+      minLen: function( edge ){
+        visitedEdges.push( edge.id() );
+        return 1;
+      }
+    }).run();
+
+    expect( visitedEdges ).to.deep.equal([ 'child-edge' ]);
+  });
+
+  it('stores and automatically styles Dagre edge control points', function(){
+    let cy = createCy([
+      { data: { id: 'a' } },
+      { data: { id: 'b' } },
+      { data: { id: 'ab', source: 'a', target: 'b' } }
+    ], { styleEnabled: true });
+
+    cy.layout({
+      name: 'dagre',
+      useDagreEdgeControlPoints: true,
+      automaticDagreEdgeStyle: true
+    }).run();
+
+    let edge = cy.getElementById( 'ab' );
+    expect( edge.hasClass( 'useDagreEdgeControlPoints' ) ).to.equal( true );
+    expect( edge.scratch( 'controlPointWeights' ) ).to.be.an( 'array' ).that.is.not.empty;
+    expect( edge.scratch( 'controlPointDistances' ) ).to.be.an( 'array' ).that.is.not.empty;
+    expect( edge.style( 'curve-style' ) ).to.equal( 'unbundled-bezier' );
+    cy.destroy();
   });
 });

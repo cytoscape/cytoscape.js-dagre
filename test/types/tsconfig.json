@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "ES2019",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": false,
+    "noEmit": true
+  },
+  "include": ["*.mts", "*.cts"]
+}

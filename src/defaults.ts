@@ -1,8 +1,18 @@
+import type cytoscape from 'cytoscape';
+import type cytoscapeDagre from '../index';
+
+export type LayoutDefaults = Omit<cytoscapeDagre.DagreLayoutOptions, 'name'>;
+type RequiredRuntimeDefaults = LayoutDefaults & {
+  minLen: NonNullable<LayoutDefaults['minLen']>;
+  edgeWeight: NonNullable<LayoutDefaults['edgeWeight']>;
+  dagreEdgeStyle: NonNullable<LayoutDefaults['dagreEdgeStyle']>;
+};
+
 /**
  * Dagre algorithmic options. The default value of dagre.js is used
  * when the option is left undefined here.
  */
-const defaults = {
+const defaults: RequiredRuntimeDefaults = {
   /**
    * the separation between adjacent nodes in the same rank
    */
@@ -18,17 +28,17 @@ const defaults = {
   /**
    * Direction in which ranks flow: `'TB'` for top to bottom flow, `'LR'` for left to right,
    */
-  rankDir: undefined as string | undefined,
+  rankDir: undefined,
   /**
    * alignment for rank nodes. Can be `'UL'`, `'UR'`, `'DL'`, or `'DR'`,
    * where `U` = up, `D` = down, `L` = left, and `R` = right
    */
-  align: undefined as string | undefined,
+  align: undefined,
   /**
    * If set to `'greedy'`, uses a greedy heuristic for finding a feedback arc set for a graph.
    * A feedback arc set is a set of edges that can be removed to make a graph acyclic.
    */
-  acyclicer: undefined as string | undefined,
+  acyclicer: undefined,
   /**
    * Type of algorithm to assigns a rank to each node in the input graph.
    * Possible values:
@@ -36,15 +46,15 @@ const defaults = {
    *    * `'tight-tree'` or
    *    * `'longest-path'`
    */
-  ranker: undefined as string | undefined,
+  ranker: undefined,
   /**
    * Number of ranks to keep between the source and target of the edge
    */
-  minLen: function( _edge: any ){ return 1; },
+  minLen: function( _edge: cytoscape.EdgeSingular ){ return 1; },
   /**
    * Higher weight edges are generally made shorter and straighter than lower weight edges} _edge
    */
-  edgeWeight: function( _edge: any ){ return 1; },
+  edgeWeight: function( _edge: cytoscape.EdgeSingular ){ return 1; },
 
   /* general layout options */
   /**
@@ -78,11 +88,11 @@ const defaults = {
    */
   dagreEdgeStyle: {
     'curve-style'             : 'unbundled-bezier',
-    'control-point-weights'   : ( ele: any ) => ele.scratch('controlPointWeights'),
-    'control-point-distances' : ( ele: any ) => ele.scratch('controlPointDistances'),
+    'control-point-weights'   : ( ele: cytoscape.EdgeSingular ) => ele.scratch('controlPointWeights') as number[],
+    'control-point-distances' : ( ele: cytoscape.EdgeSingular ) => ele.scratch('controlPointDistances') as number[],
     'edge-distances'          : 'intersection',
     'edge-ends-overlap'       : false
-  } as Record<string, any>,
+  },
   /**
    * Whether to transition the node positions
    */
@@ -90,7 +100,7 @@ const defaults = {
   /**
    * Whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions
    */
-  animateFilter: function( _node: any, _i: any ){ return true; },
+  animateFilter: function( _node: cytoscape.NodeSingular, _i: number ){ return true; },
   /**
    * Duration of animation in ms if enabled
    */
@@ -98,15 +108,15 @@ const defaults = {
   /**
    * Easing of animation, if enabled
    */
-  animationEasing: undefined as string | undefined,
+  animationEasing: undefined,
   /**
    * Constrain outermost layout bounds; `{ x1, y1, x2, y2 }` or `{ x1, y1, w, h }`
    */
-  boundingBox: undefined as any,
+  boundingBox: undefined,
   /**
    * A function that applies a transform to the final node position
    */
-  transform: function( node: any, pos: any ){ return pos; },
+  transform: function( _node: cytoscape.NodeSingular, pos: cytoscape.Position ){ return pos; },
   /**
    * On layoutready execute this function
    */
@@ -118,7 +128,7 @@ const defaults = {
    * This feature is most useful when adding and removing the same nodes and edges multiple times in a graph,
    * but it can also help avoid sprurious edge crossings between ranks.
    */
-  sort: undefined as ( ( a: any, b: any ) => number ) | undefined,
+  sort: undefined,
   /**
    * on layoutstop, execute this function
    */
