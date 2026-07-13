@@ -1,72 +1,82 @@
-/** 
+import type cytoscape from 'cytoscape';
+import type cytoscapeDagre from '../index.js';
+
+export type LayoutDefaults = Omit<cytoscapeDagre.DagreLayoutOptions, 'name'>;
+type RequiredRuntimeDefaults = LayoutDefaults & {
+  minLen: NonNullable<LayoutDefaults['minLen']>;
+  edgeWeight: NonNullable<LayoutDefaults['edgeWeight']>;
+  dagreEdgeStyle: NonNullable<LayoutDefaults['dagreEdgeStyle']>;
+};
+
+/**
  * Dagre algorithmic options. The default value of dagre.js is used
  * when the option is left undefined here.
  */
-const defaults = {
+const defaults: RequiredRuntimeDefaults = {
   /**
    * the separation between adjacent nodes in the same rank
    */
-  nodeSep: undefined, 
+  nodeSep: undefined as number | undefined,
   /**
    * The separation between adjacent edges in the same rank
    */
-  edgeSep: undefined, 
+  edgeSep: undefined as number | undefined,
   /**
    * The separation between each rank in the layout
    */
-  rankSep: undefined, 
+  rankSep: undefined as number | undefined,
   /**
    * Direction in which ranks flow: `'TB'` for top to bottom flow, `'LR'` for left to right,
    */
   rankDir: undefined,
   /**
-   * alignment for rank nodes. Can be `'UL'`, `'UR'`, `'DL'`, or `'DR'`, 
+   * alignment for rank nodes. Can be `'UL'`, `'UR'`, `'DL'`, or `'DR'`,
    * where `U` = up, `D` = down, `L` = left, and `R` = right
    */
-  align: undefined,  
+  align: undefined,
   /**
    * If set to `'greedy'`, uses a greedy heuristic for finding a feedback arc set for a graph.
    * A feedback arc set is a set of edges that can be removed to make a graph acyclic.
    */
-  acyclicer: undefined, 
+  acyclicer: undefined,
   /**
    * Type of algorithm to assigns a rank to each node in the input graph.
-   * Possible values: 
-   *    * `'network-simplex'`, 
+   * Possible values:
+   *    * `'network-simplex'`,
    *    * `'tight-tree'` or
    *    * `'longest-path'`
    */
-  ranker:  undefined, 
+  ranker: undefined,
   /**
    * Number of ranks to keep between the source and target of the edge
    */
-  minLen: function( _edge ){ return 1; },
+  minLen: function( _edge: cytoscape.EdgeSingular ){ return 1; },
   /**
-   * Higher weight edges are generally made shorter and straighter than lower weight edges} _edge 
+   * Higher weight edges are generally made shorter and straighter than lower weight edges} _edge
    */
-  edgeWeight: function( _edge ){ return 1; }, 
+  edgeWeight: function( _edge: cytoscape.EdgeSingular ){ return 1; },
 
   /* general layout options */
   /**
    * whether to fit to viewport
    */
-  fit: true, 
+  fit: true,
   /**
    * Fit padding
    */
-  padding: 30, 
+  padding: 30,
   /**
    * Applies a multiplicative factor (>0) to expand or compress the overall area that the nodes take up
    */
-  spacingFactor: undefined, 
+  spacingFactor: undefined as number | undefined,
   /**
    * Whether labels should be included in determining the space used by a node
    */
-  nodeDimensionsIncludeLabels: false, 
+  nodeDimensionsIncludeLabels: false,
   /**
    * Enables bezier curves using dagre's edge control points
    */
-  useDagreEdgeControlPoints: false, 
+  useDagreEdgeControlPoints: false,
   /**
    * Automatically adds edge class '.useDagreEdgeControlPoints' to all edges and configure it with this.dagreEdgeStyle.
    * If set to `false` and `useDagreEdgeControlPoints` is `true` then apply `this.dagreEdgeStyle` yourself.
@@ -78,39 +88,39 @@ const defaults = {
    */
   dagreEdgeStyle: {
     'curve-style'             : 'unbundled-bezier',
-    'control-point-weights'   : ele => ele.scratch('controlPointWeights'),
-    'control-point-distances' : ele => ele.scratch('controlPointDistances'),
+    'control-point-weights'   : ( ele: cytoscape.EdgeSingular ) => ele.scratch('controlPointWeights') as number[],
+    'control-point-distances' : ( ele: cytoscape.EdgeSingular ) => ele.scratch('controlPointDistances') as number[],
     'edge-distances'          : 'intersection',
     'edge-ends-overlap'       : false
   },
   /**
    * Whether to transition the node positions
    */
-  animate: false, 
+  animate: false,
   /**
    * Whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions
    */
-  animateFilter: function( _node, _i ){ return true; }, 
+  animateFilter: function( _node: cytoscape.NodeSingular, _i: number ){ return true; },
   /**
    * Duration of animation in ms if enabled
    */
-  animationDuration: 500, 
+  animationDuration: 500,
   /**
    * Easing of animation, if enabled
    */
-  animationEasing: undefined, 
+  animationEasing: undefined,
   /**
    * Constrain outermost layout bounds; `{ x1, y1, x2, y2 }` or `{ x1, y1, w, h }`
    */
-  boundingBox: undefined, 
+  boundingBox: undefined,
   /**
    * A function that applies a transform to the final node position
    */
-  transform: function( node, pos ){ return pos; }, 
+  transform: function( _node: cytoscape.NodeSingular, pos: cytoscape.Position ){ return pos; },
   /**
    * On layoutready execute this function
    */
-  ready: function(){}, 
+  ready: function(){},
   /**
    * A sorting function to order the nodes and edges; e.g. `function(a, b){ return a.data('weight') - b.data('weight')`. }
    * Because cytoscape dagre creates a directed graph, and directed graphs use the node order as a tie breaker when
@@ -118,11 +128,11 @@ const defaults = {
    * This feature is most useful when adding and removing the same nodes and edges multiple times in a graph,
    * but it can also help avoid sprurious edge crossings between ranks.
    */
-  sort: undefined, 
+  sort: undefined,
   /**
    * on layoutstop, execute this function
    */
-  stop: function(){}, 
+  stop: function(){},
 };
 
 export default defaults;
