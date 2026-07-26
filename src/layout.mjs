@@ -5,6 +5,18 @@ import dagre from '@dagrejs/dagre';
 const isFunction = function(o){ return typeof o === 'function'; };
 const EPSILON = 0.001; // what does it mean to be too close to 0?
 
+// Helper to resolve parent nodes to actual child nodes for Dagre ranking
+function getDagreNode(ele) {
+  if (ele.isParent()) {
+    const children = ele.children();
+    if (children.length > 0) {
+      // Recursively find the first leaf child inside the compound parent
+      return getDagreNode(children[0]);
+    }
+  }
+  return ele;
+}
+
 // constructor
 // options : object containing layout options
 function DagreLayout( options ) {
@@ -174,9 +186,7 @@ DagreLayout.prototype.run = function(){
   }
 
   // add edges to dagre
-  let edges = eles.edges().stdFilter(function( edge ){
-    return !edge.source().isParent() && !edge.target().isParent(); // dagre can't handle edges on compound nodes
-  });
+  let edges = eles.edges();
 
   if ( isFunction(options.sort) ) {
     edges = edges.sort( options.sort );
@@ -185,7 +195,11 @@ DagreLayout.prototype.run = function(){
   for( let i = 0; i < edges.length; i++ ){
     let edge = edges[i];
 
-    g.setEdge( edge.source().id(), edge.target().id(), {
+    // Resolve source and target to non-parent leaf nodes if needed
+    let sourceNode = getDagreNode(edge.source());
+    let targetNode = getDagreNode(edge.target());
+
+    g.setEdge( sourceNode.id(), targetNode.id(), {
       minlen: getVal( edge, options.minLen ),
       weight: getVal( edge, options.edgeWeight ),
       name: edge.id()
