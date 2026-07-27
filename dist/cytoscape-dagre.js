@@ -1,5 +1,5 @@
 /*!
- * cytoscape-dagre 3.0.0
+ * cytoscape-dagre 4.0.0
  * https://github.com/cytoscape/cytoscape.js-dagre
  * License: MIT
  */
@@ -238,6 +238,18 @@
   };
   var EPSILON = 0.001; // what does it mean to be too close to 0?
 
+  // Helper to resolve parent nodes to actual child nodes for Dagre ranking
+  function getDagreNode(ele) {
+    if (ele.isParent()) {
+      var children = ele.children();
+      if (children.length > 0) {
+        // Recursively find the first leaf child inside the compound parent
+        return getDagreNode(children[0]);
+      }
+    }
+    return ele;
+  }
+
   // constructor
   // options : object containing layout options
   function DagreLayout(options) {
@@ -439,15 +451,17 @@
     }
 
     // add edges to dagre
-    var edges = eles.edges().stdFilter(function (edge) {
-      return !edge.source().isParent() && !edge.target().isParent(); // dagre can't handle edges on compound nodes
-    });
+    var edges = eles.edges();
     if (isFunction(options.sort)) {
       edges = edges.sort(options.sort);
     }
     for (var _i2 = 0; _i2 < edges.length; _i2++) {
       var edge = edges[_i2];
-      g.setEdge(edge.source().id(), edge.target().id(), {
+
+      // Resolve source and target to non-parent leaf nodes if needed
+      var sourceNode = getDagreNode(edge.source());
+      var targetNode = getDagreNode(edge.target());
+      g.setEdge(sourceNode.id(), targetNode.id(), {
         minlen: getVal(edge, options.minLen),
         weight: getVal(edge, options.edgeWeight),
         name: edge.id()
