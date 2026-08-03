@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import chai from 'chai';
+import * as chai from 'chai';
 
 const require = createRequire( import.meta.url );
 const pkg = require('../package.json');
