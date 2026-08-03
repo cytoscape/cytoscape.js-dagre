@@ -1,1 +1,1 @@
-C:/Users/nithi/OneDrive/Desktop/open source/cytoscape.js-dagre/dist/cytoscape-dagre.js
+dist/cytoscape-dagre.js
