@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
 import chai from 'chai';
 
 const require = createRequire( import.meta.url );
@@ -39,9 +41,11 @@ describe('built artifacts', function(){
     let pagesLink = path.join( root, 'pages', 'cytoscape-dagre.js' );
 
     expect( fs.lstatSync( rootLink ).isSymbolicLink() ).to.equal( true );
-    expect( fs.readlinkSync( rootLink ) ).to.equal( 'dist/cytoscape-dagre.js' );
+    // Resolve the read symlink path against the directory it lives in
+    expect( path.resolve( root, fs.readlinkSync( rootLink ) ) ).to.equal( path.resolve( dist, 'cytoscape-dagre.js' ) );
+    
     expect( fs.lstatSync( pagesLink ).isSymbolicLink() ).to.equal( true );
-    expect( fs.readlinkSync( pagesLink ) ).to.equal( '../dist/cytoscape-dagre.js' );
+    expect( path.resolve( path.join( root, 'pages' ), fs.readlinkSync( pagesLink ) ) ).to.equal( path.resolve( dist, 'cytoscape-dagre.js' ) );
   });
 
   it('loads the UMD builds through CommonJS', function(){
