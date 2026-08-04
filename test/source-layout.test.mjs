@@ -1,6 +1,7 @@
 import cytoscape from 'cytoscape';
-import chai from 'chai';
-import register from '../src/index.mjs';
+import * as chai from 'chai';
+import register from '../dist/cytoscape-dagre.mjs';
+import { describe, it } from 'node:test';
 
 const { expect } = chai;
 
