@@ -1,20 +1,13 @@
 import impl from './layout.ts';
 
-// Registers the extension on a Cytoscape library reference.
-const register = function(cytoscape: any) {
-  if (!cytoscape) {
-    return;
-  }
+// registers the extension on a cytoscape lib ref
+let register = function( cytoscape: any ): void {
+  if( !cytoscape ){ return; } // can't register if cytoscape unspecified
 
-  // Register the Dagre layout with Cytoscape.js.
-  cytoscape('layout', 'dagre', impl);
+  cytoscape( 'layout', 'dagre', impl ); // register with cytoscape.js
 };
 
-// Expose to global Cytoscape when running in a browser environment.
-if (
-  typeof window !== 'undefined' &&
-  typeof (window as any).cytoscape !== 'undefined'
-) {
+if( typeof window !== 'undefined' && (window as any).cytoscape !== 'undefined' ){ // expose to global cytoscape (i.e. window.cytoscape)
   register((window as any).cytoscape);
 }
 

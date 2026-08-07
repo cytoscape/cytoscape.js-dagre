@@ -1,21 +1,15 @@
-
 // Simple, internal Object.assign() polyfill for options objects etc.
 
-const assign =
-  Object.assign != null
-    ? Object.assign.bind(Object)
-    : function(
-        tgt: Record<string, unknown>,
-        ...srcs: Record<string, unknown>[]
-      ) {
-        srcs.forEach(src => {
-          Object.keys(src).forEach(k => {
-            tgt[k] = src[k];
-          });
-        });
+const assign = Object.assign != null ? Object.assign.bind(Object) : function(tgt: any, ...srcs: any[]): any {
+  srcs.forEach(src => {
+    if (src != null) {
+      Object.keys(src).forEach(k => {
+        tgt[k] = src[k];
+      });
+    }
+  });
 
-        return tgt;
-      };
+  return tgt;
+};
 
 export default assign;
-
