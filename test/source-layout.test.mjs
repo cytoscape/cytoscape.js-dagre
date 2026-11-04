@@ -3,14 +3,24 @@ import chai from 'chai';
 import register from '../src/index.mjs';
 
 const { expect } = chai;
-
-register( cytoscape );
+let currentCy;
 
 function createCy( elements ){
-  return cytoscape({
+  currentCy = cytoscape({
     headless: true,
     elements
   });
+  return currentCy;
+}
+
+function createOrderingCy(){
+  return createCy([
+    { data: { id: 'root' } },
+    { data: { id: 'b' } },
+    { data: { id: 'a' } },
+    { data: { id: 'rb', source: 'root', target: 'b' } },
+    { data: { id: 'ra', source: 'root', target: 'a' } }
+  ]);
 }
 
 function expectFinitePosition( node ){
@@ -23,6 +33,84 @@ function expectFinitePosition( node ){
 }
 
 describe('source dagre layout', function(){
+  before(function(){
+    register( cytoscape );
+  });
+
+  afterEach(function(){
+    if( currentCy ){ currentCy.destroy(); }
+    currentCy = undefined;
+  });
+
+  it('applies same-rank ordering constraints without mutating caller options', function(){
+    let cy = createOrderingCy();
+    let constraints = Object.freeze([ Object.freeze({ left: 'b', right: 'a' }) ]);
+    let dagreOptions = Object.freeze({ constraints });
+    let options = Object.freeze({ name: 'dagre', dagreOptions });
+
+    cy.layout( options ).run();
+
+    expect( cy.$id('b').position().y ).to.equal( cy.$id('a').position().y );
+    expect( cy.$id('b').position().x ).to.be.below( cy.$id('a').position().x );
+    expect( options.dagreOptions ).to.equal( dagreOptions );
+    expect( dagreOptions.constraints ).to.equal( constraints );
+  });
+
+  it('lets customOrder delegate with its own constraints on the ranked graph', function(){
+    let cy = createOrderingCy();
+    let calls = 0;
+    let constraints = Object.freeze([ Object.freeze({ left: 'b', right: 'a' }) ]);
+    let options = Object.freeze({
+      name: 'dagre',
+      dagreOptions: Object.freeze({
+        constraints: [ { left: 'a', right: 'b' } ],
+        customOrder: function( graph, builtInOrder ){
+          calls++;
+          expect( graph.node('a').rank ).to.be.a( 'number' );
+          expect( graph.node('a').rank ).to.equal( graph.node('b').rank );
+          builtInOrder( graph, { constraints } );
+        }
+      })
+    });
+
+    cy.layout( options ).run();
+
+    expect( calls ).to.equal( 1 );
+    expect( cy.$id('b').position().x ).to.be.below( cy.$id('a').position().x );
+  });
+
+  it('preserves default positions when ordering options are omitted or empty', function(){
+    let cy = createOrderingCy();
+
+    [
+      {},
+      { dagreOptions: undefined },
+      { dagreOptions: {} },
+      { dagreOptions: { constraints: [] } }
+    ].forEach(function( options ){
+      cy.layout({ name: 'dagre', ...options }).run();
+
+      expect( cy.nodes().map( node => node.position() ) ).to.deep.equal([
+        { x: 26, y: 0.5 },
+        { x: 51.5, y: 51.5 },
+        { x: 0.5, y: 51.5 }
+      ]);
+    });
+  });
+
+  it('can disable the optimal ordering heuristic', function(){
+    let cy = createOrderingCy();
+
+    cy.layout({ name: 'dagre', dagreOptions: {
+      disableOptimalOrderHeuristic: true,
+      constraints: [ { left: 'a', right: 'b' } ]
+    } }).run();
+
+    expect( cy.$id('b').position().x ).to.be.below( cy.$id('a').position().x );
+    cy.layout({ name: 'dagre', dagreOptions: { disableOptimalOrderHeuristic: false } }).run();
+    expect( cy.$id('a').position().x ).to.be.below( cy.$id('b').position().x );
+  });
+
   it('runs on a simple directed graph', function(){
     let cy = createCy([
       { data: { id: 'n0' } },

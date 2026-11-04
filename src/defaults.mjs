@@ -38,6 +38,10 @@ const defaults = {
    */
   ranker:  undefined, 
   /**
+   * Options passed to dagre.layout(graph, options), e.g. constraints and customOrder(graph, builtInOrder).
+   */
+  dagreOptions: undefined,
+  /**
    * Number of ranks to keep between the source and target of the edge
    */
   minLen: function( _edge ){ return 1; },
