@@ -68,6 +68,7 @@ var defaults = {
   acyclicer: undefined, // If set to 'greedy', uses a greedy heuristic for finding a feedback arc set for a graph.
                         // A feedback arc set is a set of edges that can be removed to make a graph acyclic.
   ranker: undefined, // Type of algorithm to assign a rank to each node in the input graph. Possible values: 'network-simplex', 'tight-tree' or 'longest-path'
+  dagreOptions: undefined, // options passed directly as the second argument to dagre.layout()
   minLen: function( edge ){ return 1; }, // number of ranks to keep between the source and target of the edge
   edgeWeight: function( edge ){ return 1; }, // higher weight edges are generally made shorter and straighter than lower weight edges
 
@@ -115,6 +116,23 @@ When `useDagreEdgeControlPoints` is `true` the layout algoritm maps Dagre's edge
 shows how to configure each edge to make use of the control points. If `automaticDagreEdgeStyle` is set to true, the layout will add a style (`.useDagreEdgeControlPoints`)
 to all edges and register the exact style given by `dagreEdgeStyle` for this class of edges. You can always role your own style instead, as long as you 
 copy the fields of `dagreEdgeStyle` exactly.
+
+### Dagre options
+
+`dagreOptions` passes directly to [Dagre's ordering options](https://github.com/dagrejs/dagre/blob/v3.0.0/lib/order/index.ts) through the second layout argument.
+Configure direction and spacing with `rankDir`, `nodeSep`, and `rankSep`.
+
+```js
+cy.layout({
+  name: 'dagre',
+  dagreOptions: { constraints: [{ left: 'b', right: 'a' }] }
+}).run();
+```
+
+Use valid node IDs and acyclic constraints within the same rank and ordering scope (siblings in compound graphs).
+`disableOptimalOrderHeuristic: true` uses the initial order and skips constraint sweeps.
+`customOrder(graph, builtInOrder)` receives Dagre's ranked Graphlib graph, including dummy nodes.
+Set node `order` values or delegate with explicit options: `builtInOrder(graph, { constraints })`; omit the same callback to avoid recursion.
 
 ## Build targets
 

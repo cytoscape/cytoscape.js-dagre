@@ -9,6 +9,28 @@ declare namespace cytoscapeDagre {
   type DagreAcyclicer = 'greedy';
   type DagreRanker = 'network-simplex' | 'tight-tree' | 'longest-path';
 
+  interface DagreOrderConstraint {
+    left: string;
+    right: string;
+  }
+
+  /** Minimal node-ordering view of Dagre's internal graph, including dummy nodes. */
+  interface DagreOrderingGraph {
+    nodes(): string[];
+    node(id: string): { rank?: number; order?: number; [key: string]: unknown } | undefined;
+  }
+
+  interface DagreLayoutConfig {
+    constraints?: DagreOrderConstraint[];
+    customOrder?: DagreCustomOrder;
+    disableOptimalOrderHeuristic?: boolean;
+  }
+
+  type DagreCustomOrder = (
+    graph: DagreOrderingGraph,
+    builtInOrder: (graph: DagreOrderingGraph, options?: DagreLayoutConfig) => void
+  ) => void;
+
   interface DagreAlgorithmOptions {
     [key: string]: any;
   }
@@ -31,6 +53,7 @@ declare namespace cytoscapeDagre {
     align?: DagreAlign;
     acyclicer?: DagreAcyclicer;
     ranker?: DagreRanker;
+    dagreOptions?: DagreLayoutConfig;
     minLen?: number | ((edge: cytoscape.EdgeSingular) => number);
     edgeWeight?: number | ((edge: cytoscape.EdgeSingular) => number);
     fit?: boolean;

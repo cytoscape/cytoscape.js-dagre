@@ -206,7 +206,7 @@ DagreLayout.prototype.run = function(){
     }, edge.id() );
   }
 
-  dagre.layout( g );
+  dagre.layout( g, options.dagreOptions );
 
   let gNodeIds = g.nodes();
   for( let i = 0; i < gNodeIds.length; i++ ){

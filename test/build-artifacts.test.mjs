@@ -3,6 +3,7 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import chai from 'chai';
+import cytoscape from 'cytoscape';
 
 const require = createRequire( import.meta.url );
 const pkg = require('../package.json');
@@ -34,6 +35,34 @@ describe('package metadata', function(){
 });
 
 describe('built artifacts', function(){
+  let cy;
+
+  afterEach(function(){
+    if( cy ){ cy.destroy(); }
+    cy = undefined;
+  });
+
+  [ 'CommonJS', 'ESM' ].forEach(function( format ){
+    it(`forwards constraints through the ${format} entrypoint`, async function(){
+      let register = format === 'CommonJS' ? require('cytoscape-dagre') : (await import('cytoscape-dagre')).default;
+      register( cytoscape );
+      cy = cytoscape({
+        headless: true,
+        elements: [
+          { data: { id: 'root' } },
+          { data: { id: 'b' } },
+          { data: { id: 'a' } },
+          { data: { id: 'rb', source: 'root', target: 'b' } },
+          { data: { id: 'ra', source: 'root', target: 'a' } }
+        ]
+      });
+      let constraints = [ { left: 'b', right: 'a' } ];
+
+      cy.layout({ name: 'dagre', dagreOptions: { constraints } }).run();
+      expect( cy.$id('b').position().x ).to.be.below( cy.$id('a').position().x );
+    });
+  });
+
   it('keeps legacy UMD artifact links pointed at dist', function(){
     let rootLink = path.join( root, 'cytoscape-dagre.js' );
     let pagesLink = path.join( root, 'pages', 'cytoscape-dagre.js' );
