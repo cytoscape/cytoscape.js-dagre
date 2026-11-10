@@ -1,5 +1,5 @@
 /*!
- * cytoscape-dagre 4.0.0
+ * cytoscape-dagre 4.1.0
  * https://github.com/cytoscape/cytoscape.js-dagre
  * License: MIT
  */
@@ -118,6 +118,10 @@
      *    * `'longest-path'`
      */
     ranker: undefined,
+    /**
+     * Options passed to dagre.layout(graph, options), e.g. constraints and customOrder(graph, builtInOrder).
+     */
+    dagreOptions: undefined,
     /**
      * Number of ranks to keep between the source and target of the edge
      */
@@ -467,7 +471,7 @@
         name: edge.id()
       }, edge.id());
     }
-    To.layout(g);
+    To.layout(g, options.dagreOptions);
     var gNodeIds = g.nodes();
     for (var _i3 = 0; _i3 < gNodeIds.length; _i3++) {
       var id = gNodeIds[_i3];
